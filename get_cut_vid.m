@@ -1,8 +1,9 @@
-function [VID,cent] = get_cut_vid(vid, bb, flex, cut)
+function [VID,cent] = get_cut_vid(vid, percent_frame, bb, flex, cut)
 % get_head_vid: 
 %
 %   INPUT:
 %       vid     : video matrix
+%       P       : what percent of frames to grab (1 < size(P,3))    
 %       bb      : bounding box
 %       flex    : 1x2 proportion to extend frame by in each direction
 %       cut     : proportion to cut frame from bottom
@@ -31,12 +32,20 @@ else
     yr = yr(~out_range_y);
     VID.main = vid(yr,xr,:);
 end
+
+if ~isempty(percent_frame)
+	n_use_frame = round(percent_frame*dim(3));
+    rand_frame = randperm(dim(3), n_use_frame);
+    VID.main = VID.main(:,:,rand_frame);
+end
+n_frame = size(VID.main, 3);
+
 VID.bw = false(size(VID.main)); % bianarized video
 VID.out = false(size(VID.main)); % outline video
 se_dilate = strel('disk',8);
 se_erode = strel('disk',4);
 se_close = strel('disk',1);
-for n = 1:dim(3)
+for n = 1:n_frame
     A = cell(1);
     A{1} = VID.main(:,:,n);
     A{end+1} = medfilt2(A{end}, [5 5]);

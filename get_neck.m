@@ -1,4 +1,4 @@
-function [pivot, R_head, R_body] = get_neck(vid, vid_bw, cent)
+function [pivot, R_head, R_body, body_angle] = get_neck(vid, vid_bw, cent)
 %% get_neck: estimate neck point
 %  Fc_n: normalized filtering coefficent for finding neck joint
 %
@@ -39,35 +39,45 @@ for n = 1:dim(3)
 
     % Get bottom edge of neck in left and right images
     if n > 1
-        [nR(n)] = get_neck_point(xR_filt, right, nR, dim, false);
-        [nL(n)] = get_neck_point(xL_filt, left, nL, dim, false);
+        [nR(n)] = get_neck_point(xR_filt, right, nR, false);
+        [nL(n)] = get_neck_point(xL_filt, left, nL, false);
     else
-        [nR(n)] = get_neck_point(xR_filt, right, [], dim, false);
-        [nL(n)] = get_neck_point(xL_filt, left, [], dim, false);
+        [nR(n)] = get_neck_point(xR_filt, right, [], false);
+        [nL(n)] = get_neck_point(xL_filt, left, [], false);
     end
 end
 
 % Estimate the pivot & radius point of the head/neck about yaw
 pivot(2) = 0.96*nanmedian(cat(1, [nL.peak]', [nR.peak]'));
 startI_med = median(cat(1, [nL.startI]', [nR.startI]'));
-endI_med = median(cat(1, [nL.startI]', [nR.startI]'));
+endI_med = median(cat(1, [nL.endI]', [nR.endI]'));
 
 neck_y_range = round( (pivot(2) - startI_med) : pivot(2));
-neck_vid = vid_bw(neck_y_range,:,:);
+body_y_range = round(pivot(2)+10:endI_med);
+%neck_vid = vid_bw(neck_y_range,:,:);
 R_head = 1.0*(pivot(2) - startI_med);
 R_body = (endI_med - pivot(2));
 
 neck_x_all = nan(dim(3),1);
+body_cent = nan(dim(3),2);
 for n = 1:dim(3)
-   frame = neck_vid(:,:,n);
+   frame = vid_bw(neck_y_range,:,n);
    [~,neck_x] = find(frame);
    neck_x_all(n) = mean(neck_x);
+   
+   frame_body = vid_bw(:,:,n);
+   frame_body(1:body_y_range(2),:) = false;
+   [body_y,body_x] = find(frame_body);
+   body_cent(n,:) = median([body_x body_y]);
 end
 pivot(1) = median(neck_x_all);
+body_cent = median(body_cent,1);
+body_axis = body_cent - pivot;
+body_angle = -rad2deg(atan2(body_axis(1), body_axis(2)));
 
 end
 
-function [neck] = get_neck_point(edge, I, side, dim, debug)
+function [neck] = get_neck_point(edge, I, side, debug)
 %% get_neck_point:
 %   INPUTS:
 %       edge    : far edge for each row
@@ -80,7 +90,6 @@ function [neck] = get_neck_point(edge, I, side, dim, debug)
 
 neck.I = I;
 neck.full_edge = edge;
-% endI = round(0.3 * dim(1));
 startI = round(1.1*find(any(I,2),1,'first'));
 endI = round(0.7*find(any(I,2),1,'last'));
 cut_edge = nan(size(edge));
@@ -128,17 +137,8 @@ neck.peak = round(locs(1));
 neck.dx = -pks(1);
 neck.width = w(1);
 
-if ~neck.flag
-    offset = 0.2*neck.width;
-    Lr = 1.5;
-else
-    offset = -0.4*neck.width;
-    Lr = 2;
-end
-
 if debug
-    fig = figure (109); cla
-    %set(fig, 'Color', 'w', 'Units', 'inches', 'Position', [3 3 4 6])
+    figure (109); cla
     ax(1) = subplot(1,1,1); hold on; axis image
         imshow(255*I, 'InitialMagnification', 400) ; hold on
         plot(edge,idx,'m', 'LineWidth', 1)

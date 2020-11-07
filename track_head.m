@@ -43,9 +43,9 @@ if isstruct(set_mask(1)) % mask given
     % no computations needed
 elseif set_mask(1) == 1 % set mask automatically by finding neck joint
  	disp('Finding neck ...')
-    [body_yaw, ~, ~] = get_vid_props(vid, false); % bouding box
-    [VID,cent] = get_cut_vid(vid, [], [0.1 0.1], 0.3); % get head vid
-    [pivot,R] = get_neck(VID.out, VID.bw, cent); % find neck joint % head radius
+    %[body_yaw, ~, ~] = get_vid_props(vid, false); % bouding box
+    [VID,cent] = get_cut_vid(vid, 0.2, [], [0.1 0.1], 0.3); % get head vid
+    [pivot,R,~,body_yaw] = get_neck(VID.out, VID.bw, cent); % find neck joint % head radius
     
     global mask
  	mask_frame = vid(:,:,1); % get 1st frame to set mask
@@ -79,13 +79,9 @@ head.clust = cell(dim(3),1);
 head.points = cell(dim(3),1);
 head.tip = nan(dim(3),2);
 pivot = mask.move_points.rot;
-for n = 1:dim(3)
-%     if n == 1842
-%        disp('Here') 
-%     end
-    
+for n = 1:dim(3)   
     [angle,m,pts_left,k] = tracktip(vid(:,:,n), mask.area_points, ...
-        pivot, norm, npts, 'dist');
+        pivot, norm, npts, 'clust');
     head.angle_glob(n) = angle - 270;
     head.angle(n) = head.angle_glob(n) - mask.global;
     head.antenna(n,:) = m' - 270;

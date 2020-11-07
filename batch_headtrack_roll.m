@@ -32,10 +32,10 @@ for file = 1:nfile
     disp(FILES(file))
     disp('---------------------------------------')
     load(fullfile(path_yaw,FILES(file)),'head_data','head_mask')
-    load(fullfile(path_vid,FILES(file)),'vidData','t_v')
+    load(fullfile(path_vid,FILES(file)),'regvid','t_v')
 
-    [roll, roll_idx] = track_head_roll(vidData, head_data.angle, head_mask.move_points.rot, ...
-        eye_ratio, roll_cal, false);
+    [roll, roll_idx] = track_head_roll(regvid, head_data.angle, head_mask.move_points.rot, ...
+        eye_ratio, roll_cal, true);
     
  	save(fullfile(headdir,FILES{file}),'-v7.3','roll', 'roll_idx', 't_v')
                                                                        

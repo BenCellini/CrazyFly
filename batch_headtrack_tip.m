@@ -13,6 +13,12 @@ function [] = batch_headtrack_tip(root, npts, set_mask, loop_mask, playback)
 %       -
 %
 
+% root = 'E:\EXPERIMENTS\MAGNO\Experiment_SS_vel_250\registered';
+% npts = 100;
+% loop_mask = false;
+% set_mask = [1 1];
+% playback = 0;
+
 [FILES, PATH] = uigetfile({'*.mat', 'MAT-files'},'Select videos', root, 'MultiSelect','on');
 FILES = string(FILES);
 nfile = length(FILES);
