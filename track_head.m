@@ -8,7 +8,7 @@ function [head, mask] = track_head(vid, set_mask, npts, playback)
 %
 %   INPUT:
 %       vid         :   video matrix
-%       mask      	:   peredefined mask
+%       mask      	:   predefined mask
 %       npts        :   # of points for tracker
 %       playback    :   playback rate (show a frame in increments of "playback")
 %                       If false, then don't show anything (default = 1)

@@ -1,9 +1,20 @@
 function [pivot, R_head, R_body, body_angle] = get_neck(vid, vid_bw, cent)
 %% get_neck: estimate neck point
-%  Fc_n: normalized filtering coefficent for finding neck joint
 %
-Fc_n = 0.2;
+%   INPUT:
+%       vid         :   video matrix
+%       vid_bw    	:   bianarized video
+%       cent        :   centroid
+%
+%   OUTPUT:
+%    	pivot       :   neck pivot point
+%       R_head     	:   head radius
+%       R_body     	:   body radius
+%     	body_angle 	:   body angle [°]
+%
+
 dim = size(vid);
+Fc_n = 0.2; % normalized filtering cutt-off for smoothing fly outline
 for n = 1:dim(3)
     frame = vid(:,:,n); % frame for analysis
 
@@ -37,7 +48,7 @@ for n = 1:dim(3)
     xR_filt = filtfilt(b, a, xR);
     xL_filt = filtfilt(b, a, xL);
 
-    % Get bottom edge of neck in left and right images
+    % Get neck properties in frame
     if n > 1
         [nR(n)] = get_neck_point(xR_filt, right, nR, false);
         [nL(n)] = get_neck_point(xL_filt, left, nL, false);
@@ -47,17 +58,16 @@ for n = 1:dim(3)
     end
 end
 
-% Estimate the pivot & radius point of the head/neck about yaw
+% Estimate the y-axis pivot & radius of the neck about yaw
 pivot(2) = 0.96*nanmedian(cat(1, [nL.peak]', [nR.peak]'));
 startI_med = median(cat(1, [nL.startI]', [nR.startI]'));
 endI_med = median(cat(1, [nL.endI]', [nR.endI]'));
-
 neck_y_range = round( (pivot(2) - startI_med) : pivot(2));
 body_y_range = round(pivot(2)+10:endI_med);
-%neck_vid = vid_bw(neck_y_range,:,:);
-R_head = 1.0*(pivot(2) - startI_med);
+R_head = 1.1*(pivot(2) - startI_med);
 R_body = (endI_med - pivot(2));
 
+% Get the x-axis pivot, body centroid, & body angle
 neck_x_all = nan(dim(3),1);
 body_cent = nan(dim(3),2);
 for n = 1:dim(3)
@@ -82,6 +92,7 @@ function [neck] = get_neck_point(edge, I, side, debug)
 %   INPUTS:
 %       edge    : far edge for each row
 %       I       : left or right image
+%       side    : structure with previous neck points
 %       debug   : show plots
 %
 %   OUTPUTS:
@@ -101,11 +112,10 @@ neck.endI = endI;
 [pks,locs,w,p] = findpeaks(-cut_edge, 'MinPeakDistance', 10, 'MinPeakWidth', 3, ...
                                 'MinPeakProminence', 10, 'SortStr', 'descend');
 idx = (1:length(edge))';
-if isempty(locs)
+if isempty(locs) % didn;t find the neck on first try
     %warning('Small peak')
     neck.flag = true;
-
-    if ~isempty(side)
+    if ~isempty(side) % use the last neck point
         good_peak = ~[side.flag]';
         pks = -[side.dx];
         pks = median(pks(good_peak));
@@ -113,12 +123,12 @@ if isempty(locs)
         locs = median(locs(good_peak));
         w = [side.width];
         w = median(w(good_peak));
-    else
+    else % lower peak detection parameter thresholds
         [pks,locs,w,p] = findpeaks(-edge, 'MinPeakDistance', 10, ...
                 'MinPeakWidth', 3, 'MinPeakProminence', 5);
     end
 
-    if isempty(locs)
+    if isempty(locs) % if we still can't find the peak then set to NaN
         warning('Can''t find angle')
         neck.flag = nan;
         neck.peak = nan;

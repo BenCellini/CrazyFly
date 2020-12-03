@@ -157,7 +157,7 @@ else
                 angle = mean(m); % output angle is mean of each groups median
                 
                 if new_flag
-                   angle = nan; 
+                   %angle = nan; 
                 end
 
             end
