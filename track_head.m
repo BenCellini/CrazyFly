@@ -121,39 +121,36 @@ if playback
             fprintf('%i\n',n)
         end
 
-        if playback || n==1 || n==dim(3)
+        % Display image
+        if (n==1) || (~mod(n,playback)) || (n==dim(3)) % at playback rate
+            % Show images with tracking annotation
+            ax(1) = subplot(3,4,1:8); cla % frame & tracking
+                imshow(vid(:,:,n)) ; hold on ; title(angle)
+                patch(mask.points(:,1), mask.points(:,2), ...
+                    mask.color, 'FaceAlpha', 0.2, 'EdgeColor', mask.color, 'LineWidth', 0.5);
 
-            % Display image
-            if (n==1) || (~mod(n,playback)) || (n==dim(3)) % at playback rate
-                % Show images with tracking annotation
-                ax(1) = subplot(3,4,1:8); cla % frame & tracking
-                    imshow(vid(:,:,n)) ; hold on ; title(angle)
-                    patch(mask.points(:,1), mask.points(:,2), ...
-                        mask.color, 'FaceAlpha', 0.2, 'EdgeColor', mask.color, 'LineWidth', 0.5);
-                    
-                    pts_left = head.points{n}(head.clust{n}==1,:);
-                    pts_right = head.points{n}(head.clust{n}==2,:);
-                    if isempty(pts_left) ||isempty(pts_right)
-                        plot(head.points{n}(:,1),head.points{n}(:,2), 'm.', 'MarkerSize', 5)
-                    else
-                        plot(pts_left(:,1),pts_left(:,2), 'r.', 'MarkerSize', 5)
-                        plot(pts_right(:,1),pts_right(:,2), 'b.', 'MarkerSize', 5)
-                    end
-                    
-                    plot([mask.move_points.rot(1) head.tip(n,1)], ...
-                        [mask.move_points.rot(2) head.tip(n,2)], ...
-                        'Color', mask.color, 'LineWidth', 2)
+                pts_left = head.points{n}(head.clust{n}==1,:);
+                pts_right = head.points{n}(head.clust{n}==2,:);
+                if isempty(pts_left) ||isempty(pts_right)
+                    plot(head.points{n}(:,1),head.points{n}(:,2), 'm.', 'MarkerSize', 5)
+                else
+                    plot(pts_left(:,1),pts_left(:,2), 'r.', 'MarkerSize', 5)
+                    plot(pts_right(:,1),pts_right(:,2), 'b.', 'MarkerSize', 5)
+                end
 
-                    plot(mask.move_points.rot(1), mask.move_points.rot(2), '.', ...
-                        'Color', mask.color, 'MarkerSize', 10)
-            end
+                plot([mask.move_points.rot(1) head.tip(n,1)], ...
+                    [mask.move_points.rot(2) head.tip(n,2)], ...
+                    'Color', mask.color, 'LineWidth', 2)
 
-            % Display angle
-            ax(2) = subplot(3,4,9:12); % angles
-                addpoints(h.hAngle, n, head.angle(n))
-
-            pause(0.0005) % give time for images to display
+                plot(mask.move_points.rot(1), mask.move_points.rot(2), '.', ...
+                    'Color', mask.color, 'MarkerSize', 10)
         end
+
+        % Display angle
+        ax(2) = subplot(3,4,9:12); % angles
+            addpoints(h.hAngle, n, head.angle(n))
+
+        pause(0.0005) % give time for images to display
     end
 end
 
