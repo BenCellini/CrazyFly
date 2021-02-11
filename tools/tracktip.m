@@ -1,4 +1,4 @@
-function [angle,m,pts,k] = tracktip(img, mask, rot, norm, npts, mode, arg)
+function [angle,m,pts,k] = tracktip(img, mask, rot, norm, npts, mode, arg, dthresh, rmv_out)
 %% get_vid_props: get properties of video
 %
 %   INPUT:
@@ -8,6 +8,8 @@ function [angle,m,pts,k] = tracktip(img, mask, rot, norm, npts, mode, arg)
 %       npts 	:   # points to track
 %       mode  	:   median or k-means
 %       arg    	:   percentiles for median or # clusters for k-means
+%       dthresh :   std threshold for false detection [deg]
+%       rmv_out :   remove outliers
 %       debug	:   show comparison for each frame
 %
 %   OUTPUT:
@@ -16,19 +18,21 @@ function [angle,m,pts,k] = tracktip(img, mask, rot, norm, npts, mode, arg)
 %       bw      : binarized image
 %
 
-if nargin < 7 || isempty(arg)
-    if nargin < 6 || isempty(mode)
-        mode = 'dist';
-    end
-    switch mode
-        case 'dist' % average of distribution tails
-            arg = [15 85]; % upper and lower 10 percentiles default
-        case 'clust' % average of k-means cluster centroids
-            arg = 2; % 2 clusters default
-            %dthresh = 6; % angle STD limit at tip
+if nargin < 8
+    dthresh = 5; % angle STD limit at tip
+    if nargin < 7 || isempty(arg)
+        if nargin < 6 || isempty(mode)
+            mode = 'dist';
+        end
+        switch mode
+            case 'dist' % average of distribution tails
+                arg = [15 85]; % upper and lower 10 percentiles default
+            case 'clust' % average of k-means cluster centroids
+                arg = 2; % 2 clusters default
+                %dthresh = 6; % angle STD limit at tip
+        end
     end
 end
-dthresh = 10; % angle STD limit at tip
 
 % Convert to greyscale if needed
 rot = double(rot);
@@ -62,16 +66,27 @@ else
     [theta, rho] = cart2pol(x-rot(1), y-rot(2));
     theta = wrapTo360(rad2deg(theta));
     [~,rix] = sort(rho, 'descend');
-    if length(rho) < npts
-        npts = length(rho);
-        warning(['# points tracked = ' num2str(npts)])
+    if ~isnan(npts)
+        if length(rho) < npts
+            npts = length(rho);
+            warning(['# points tracked = ' num2str(npts)])
+        end
+    else
+        npts = length(theta);
     end
     
     % Only keep the points with largest radii
     rix = rix(1:npts);
     theta = theta(rix);
     rho = rho(rix);
+    P = [rho theta];
     
+    if rmv_out
+        %P = rmoutliers(P);
+        [theta, rmv] = rmoutliers(theta);
+        rho = rho(~rmv);
+    end
+        
     % Convert back to cartesian coordinates & store points
     x = x(rix);
     y = y(rix);
@@ -86,10 +101,12 @@ else
         case 'clust' % agglomerative clustering to find tip(s)
             if arg == 1 % no clustering to do if there's only 1 group
                 angle = median(theta);
+                m = angle;
+                k = ones(size(pts,1),1);
             else
                 % Cluster data into specified # of groups
                 %k = kmeans([theta rho], arg, 'Distance', 'cosine', 'MaxIter', 500);
-                Y = pdist([rho theta], 'euclidean');
+                Y = pdist(P, 'euclidean');
                 Z = linkage(Y, 'average');
                 k = cluster(Z, 'maxclust', arg);
                 m = nan(arg,1);
@@ -149,8 +166,9 @@ else
                 % Sort clusters
                 [m, sI] = sort(m, 'ascend'); % sort median by location
                 new_k = k;
-                new_k(k==sI(1)) = 1;
-                new_k(k==sI(2)) = 2;
+                for c = 1:length(m)
+                    new_k(k==sI(c)) = c;
+                end
                 k = new_k;
                 
                 % Mean angle

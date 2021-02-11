@@ -67,6 +67,16 @@ body_y_range = round(pivot(2)+10:endI_med);
 R_head = 1.1*(pivot(2) - startI_med);
 R_body = (endI_med - pivot(2));
 
+if any(neck_y_range <= 0)
+    warning('neck detetcion unsuccessful')
+    neck_y_range(neck_y_range <= 0) = [];
+end
+
+if any(body_y_range <= 0)
+    warning('neck detetcion unsuccessful')
+    body_y_range(body_y_range <= 0) = [];
+end
+
 % Get the x-axis pivot, body centroid, & body angle
 neck_x_all = nan(dim(3),1);
 body_cent = nan(dim(3),2);

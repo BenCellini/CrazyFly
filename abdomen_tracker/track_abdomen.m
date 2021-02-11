@@ -1,5 +1,5 @@
-function [head, mask] = track_head(vid, set_mask, npts, playback)
-% track_head: tracks insect head movments
+function [abdomen, mask] = track_abdomen(vid, set_mask, npts, playback)
+% track_abdomen: tracks insect abdomen movments
 %
 % Tracks antenna tips on fly head calculates the angle with
 % respect to a specififed center point.
@@ -40,56 +40,65 @@ dim = size(vid); % get size of video
 % Set mask
 if isstruct(set_mask(1)) % mask given
     mask = set_mask;
-    % no computations needed
 elseif set_mask(1) == 1 % set mask automatically by finding neck joint
- 	disp('Finding neck ...')
-    %[body_yaw, ~, ~] = get_vid_props(vid, false); % bouding box
-    [VID,cent] = get_cut_vid(vid, 0.2, [], [0.1 0.1], 0.3); % get head vid
-    [pivot,R,~,body_yaw] = get_neck(VID.out, VID.bw, cent); % find neck joint % head radius
+    %error('this ''set_mask'' smethod doesnt exist yet')
+ 	%disp('Finding neck ...')
+    
+    rot_frame = imbinarize(mean(vid,3));
+    [ry,rx] = find(rot_frame);
+    pivot = [median(rx) , 1.2*median(ry)];
+    R = max(sum(rot_frame,1));
     
     global mask
  	mask_frame = vid(:,:,1); % get 1st frame to set mask
-    %body_yaw = 0;
-    mask = make_mask(pivot, median(body_yaw), [0.8*R 2.2*R], [40 40], mask_frame);
+    mask = make_mask(pivot, 180, [0.08*R 0.3*R], [50 50], mask_frame, [1 0 1]);
     
     if auto_mask % check manually
         uiwait(mask.fig.main)
     else
         close(mask.fig.main)
     end
-elseif set_mask(1) == 2 % set mask manually, start at center
+elseif set_mask(1) == 0 % set mask manually, start at center
     pivot = [dim(2), dim(1)] ./ 2; % default is center of frame
-    R = 0.1*dim(1);
+    R = 0.2*dim(1);
     
     global mask
 	mask_frame = vid(:,:,1); % get 1st frame to set mask
-    mask = make_mask(pivot, 0, [0.8*R 2.2*R], [40 40], mask_frame);
+    mask = make_mask(pivot, 180, [0.8*R 2.2*R], [40 40], mask_frame, [1 0 1]);
     uiwait(mask.fig.main) % wait to set
 end
 disp('Mask set')
+% close
 
 % Track head in all frames using tip tracker
 tic
 disp('Tracking...')
 norm = 2;
-head.angle = nan(dim(3),1);
-head.angle_glob = nan(dim(3),1);
-head.antenna = nan(dim(3),2);
-head.clust = cell(dim(3),1);
-head.points = cell(dim(3),1);
-head.tip = nan(dim(3),2);
+n_clust = 1;
+dthresh = 8;
+rmv_out = true;
+abdomen.angle = nan(dim(3),1);
+abdomen.angle_glob = nan(dim(3),1);
+% abdomen.antenna = nan(dim(3),n_clust);
+abdomen.clust = cell(dim(3),1);
+abdomen.points = cell(dim(3),1);
+abdomen.tip = nan(dim(3),2);
 pivot = mask.move_points.rot;
-for n = 1:dim(3)   
-    [angle,m,pts_left,k] = tracktip(vid(:,:,n), mask.area_points, ...
-        pivot, norm, npts, 'clust');
-    head.angle_glob(n) = angle - 270;
-    head.angle(n) = head.angle_glob(n) - mask.global;
-    head.antenna(n,:) = m' - 270;
-    head.points{n} = pts_left;
-    head.clust{n} = k;
+SE = strel("disk",5);
+for n = 1:dim(3)
+    frame = vid(:,:,n);
+    track_frame = imerode(frame,SE);
+    %imshow(track_frame)
+    [angle,m,pts,k] = tracktip(track_frame, mask.area_points, ...
+        pivot, norm, npts, 'clust', n_clust, dthresh, rmv_out);
+    abdomen.angle_glob(n) = angle - 90;
+    abdomen.angle(n) = abdomen.angle_glob(n) - mask.global;
+    %abdomen.antenna(n,:) = m' - 270;
+    abdomen.points{n} = pts;
+    abdomen.clust{n} = k;
 
-    head.tip(n,:) = mask.move_points.rot +  ...
-        mask.radius.outer*[sind(head.angle(n)) , -cosd(head.angle(n))];
+    abdomen.tip(n,:) = mask.move_points.rot +  ...
+        -mask.radius.outer*[sind(abdomen.angle_glob(n)) , -cosd(abdomen.angle_glob(n))];
 end
 toc
 
@@ -99,7 +108,8 @@ if playback
     fig(1) = figure (101); clf
     fColor = 'k'; % figure and main axis color
     aColor = 'w'; % axis line color
-    set(fig,'Color',fColor,'Units','inches','Position',[2 2 9 7])
+    set(fig, 'Color', fColor, 'Units', 'inches', 'Name', 'CrazyFly')
+    %fig.Position(3:4) = [9 7];
     figure (101)
         % Raw image with tracking window
         ax(1) = subplot(3,4,1:8); hold on ; cla ; axis image
@@ -108,7 +118,7 @@ if playback
         ax(2) = subplot(3,4,9:12); hold on ; cla ; xlim([0 dim(3)])
             xlabel('Frame')
             ylabel('Angle (°)')
-            h.hAngle = animatedline(ax(2), 'Color', 'c', 'LineWidth', 1.5);
+            h.hAngle = animatedline(ax(2), 'Color', 'm', 'LineWidth', 1);
             % ylim(5*[-1 1])
 
     set(ax, 'Color', fColor, 'LineWidth', 1.5, 'FontSize', 12, 'FontWeight', 'bold', ...
@@ -129,32 +139,30 @@ if playback
                 patch(mask.points(:,1), mask.points(:,2), ...
                     mask.color, 'FaceAlpha', 0.2, 'EdgeColor', mask.color, 'LineWidth', 0.5);
 
-                pts_left = head.points{n}(head.clust{n}==1,:);
-                pts_right = head.points{n}(head.clust{n}==2,:);
+                pts_left = abdomen.points{n}(abdomen.clust{n}==1,:);
+                pts_right = abdomen.points{n}(abdomen.clust{n}==2,:);
                 if isempty(pts_left) ||isempty(pts_right)
-                    plot(head.points{n}(:,1),head.points{n}(:,2), 'm.', 'MarkerSize', 5)
+                    plot(abdomen.points{n}(:,1),abdomen.points{n}(:,2), 'm.', 'MarkerSize', 5)
                 else
                     plot(pts_left(:,1),pts_left(:,2), 'r.', 'MarkerSize', 5)
                     plot(pts_right(:,1),pts_right(:,2), 'b.', 'MarkerSize', 5)
                 end
 
-                plot([mask.move_points.rot(1) head.tip(n,1)], ...
-                    [mask.move_points.rot(2) head.tip(n,2)], ...
+                plot([pivot(1) mask.move_points.axis(1)], [pivot(2) mask.move_points.axis(2)], ...
+                    '--', 'Color', 0.5*mask.color, 'LineWidth', 0.5)
+                
+                plot([pivot(1) abdomen.tip(n,1)], [pivot(2) abdomen.tip(n,2)], ...
                     'Color', mask.color, 'LineWidth', 2)
 
-                plot(mask.move_points.rot(1), mask.move_points.rot(2), '.', ...
-                    'Color', mask.color, 'MarkerSize', 10)
+                plot(pivot(1), pivot(2), '.', 'Color', mask.color, 'MarkerSize', 10)
         end
 
         % Display angle
         ax(2) = subplot(3,4,9:12); % angles
-            addpoints(h.hAngle, n, head.angle(n))
+            addpoints(h.hAngle, n, abdomen.angle_glob(n))
 
         pause(0.0005) % give time for images to display
     end
 end
-
-% Get stabilized head window
-%[stable.vid, stable.cent] = stable_head(vid, head.angle, pivot);
 
 end
