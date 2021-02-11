@@ -1,7 +1,7 @@
 function [abdomen, mask] = track_abdomen(vid, set_mask, npts, playback)
 % track_abdomen: tracks insect abdomen movments
 %
-% Tracks antenna tips on fly head calculates the angle with
+% Tracks tip of abdomen, calculates the angle with
 % respect to a specififed center point.
 %
 % Sign convention for angle outputs: [CW = + , CCW = -]
