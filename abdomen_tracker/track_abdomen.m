@@ -9,7 +9,7 @@ function [abdomen, mask] = track_abdomen(vid, set_mask, npts, playback)
 %   INPUT:
 %       vid         :   video matrix
 %       mask      	:   predefined mask
-%       npts        :   # of points for tracker
+%       npts        :   # of points for tracker (if nan then track all points)
 %       playback    :   playback rate (show a frame in increments of "playback")
 %                       If false, then don't show anything (default = 1)
 %
