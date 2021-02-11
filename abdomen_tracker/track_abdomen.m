@@ -14,12 +14,12 @@ function [abdomen, mask] = track_abdomen(vid, set_mask, npts, playback)
 %                       If false, then don't show anything (default = 1)
 %
 %   OUTPUT:
-%       head (structure)
+%       abdomen (structure)
 %           angle       :   head angles [°]
 %           mask        :   head mask
-%           antenna   	:   antenna angles [°]
 %           points     	:   tracked tip points
 %           clust     	:   point cluster labels
+%       mask: mask structure
 %
 
 warning('off', 'MATLAB:declareGlobalBeforeUse')
