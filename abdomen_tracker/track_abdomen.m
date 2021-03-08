@@ -8,17 +8,19 @@ function [abdomen, mask] = track_abdomen(vid, set_mask, npts, playback)
 %
 %   INPUT:
 %       vid         :   video matrix
-%       mask      	:   predefined mask
+%       set_mask  	:   predefined mask or 2x1: [1 1] = auto place mask and let user adjust
 %       npts        :   # of points for tracker (if nan then track all points)
 %       playback    :   playback rate (show a frame in increments of "playback")
 %                       If false, then don't show anything (default = 1)
 %
 %   OUTPUT:
 %       abdomen (structure)
-%           angle       :   head angles [°]
-%           mask        :   head mask
-%           points     	:   tracked tip points
+%           angle       :   abdomen angles in body reference frame [°]
+%           angle_glob	:   abdomen angles in global reference frame [°]
 %           clust     	:   point cluster labels
+%           points     	:   point locations
+%           tip     	:   tracked tip points
+%
 %       mask: mask structure
 %
 
@@ -28,7 +30,7 @@ if ~rem(playback,1)==0
     playback = round(playback);
 end
 
-if length(set_mask) > 1  % check manually
+if length(set_mask) > 1 % check manually
     auto_mask = set_mask(2);
 else
     auto_mask = true; 
@@ -41,7 +43,7 @@ dim = size(vid); % get size of video
 if isstruct(set_mask(1)) % mask given
     mask = set_mask;
 elseif set_mask(1) == 1 % set mask automatically by finding neck joint
-    %error('this ''set_mask'' smethod doesnt exist yet')
+    %error('this ''set_mask'' method doesnt exist yet')
  	%disp('Finding neck ...')
     
     rot_frame = imbinarize(mean(vid,3));
@@ -93,7 +95,6 @@ for n = 1:dim(3)
         pivot, norm, npts, 'clust', n_clust, dthresh, rmv_out);
     abdomen.angle_glob(n) = angle - 90;
     abdomen.angle(n) = abdomen.angle_glob(n) - mask.global;
-    %abdomen.antenna(n,:) = m' - 270;
     abdomen.points{n} = pts;
     abdomen.clust{n} = k;
 
@@ -109,7 +110,8 @@ if playback
     fColor = 'k'; % figure and main axis color
     aColor = 'w'; % axis line color
     set(fig, 'Color', fColor, 'Units', 'inches', 'Name', 'CrazyFly')
-    %fig.Position(3:4) = [9 7];
+    fig.Position(3:4) = [9 7];
+    movegui(fig, 'center')
     figure (101)
         % Raw image with tracking window
         ax(1) = subplot(3,4,1:8); hold on ; cla ; axis image

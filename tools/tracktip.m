@@ -18,22 +18,24 @@ function [angle,m,pts,k] = tracktip(img, mask, rot, norm, npts, mode, arg, dthre
 %       bw      : binarized image
 %
 
-if nargin < 8
-    dthresh = 5; % angle STD limit at tip
-    if nargin < 7 || isempty(arg)
-        if nargin < 6 || isempty(mode)
-            mode = 'dist';
-        end
-        switch mode
-            case 'dist' % average of distribution tails
-                arg = [15 85]; % upper and lower 10 percentiles default
-            case 'clust' % average of k-means cluster centroids
-                arg = 2; % 2 clusters default
-                %dthresh = 6; % angle STD limit at tip
+if nargin < 9
+    rmv_out = false;
+    if nargin < 8
+        dthresh = 20; % angle STD limit at tip
+        if nargin < 7 || isempty(arg)
+            if nargin < 6 || isempty(mode)
+                mode = 'dist';
+            end
+            switch mode
+                case 'dist' % average of distribution tails
+                    arg = [15 85]; % upper and lower 10 percentiles default
+                case 'clust' % average of k-means cluster centroids
+                    arg = 2; % 2 clusters default
+                    %dthresh = 6; % angle STD limit at tip
+            end
         end
     end
 end
-
 % Convert to greyscale if needed
 rot = double(rot);
 if size(img,3) > 1
@@ -79,12 +81,15 @@ else
     rix = rix(1:npts);
     theta = theta(rix);
     rho = rho(rix);
-    P = [rho theta];
     
+    % Remove outliers
     if rmv_out
         %P = rmoutliers(P);
         [theta, rmv] = rmoutliers(theta);
         rho = rho(~rmv);
+        P = [rho theta];
+    else
+        P = [rho theta];
     end
         
     % Convert back to cartesian coordinates & store points

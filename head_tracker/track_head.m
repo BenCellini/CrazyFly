@@ -1,4 +1,4 @@
-function [head, mask] = track_head(vid, set_mask, npts, playback)
+function [head, mask] = track_head(vid, mask_mode, npts, playback)
 % track_head: tracks insect head movments with two visible antenna
 %
 % Tracks antenna tips on fly head calculates the angle with
@@ -8,19 +8,40 @@ function [head, mask] = track_head(vid, set_mask, npts, playback)
 %
 %   INPUT:
 %       vid         :   video matrix
-%       mask      	:   predefined mask
+%       mask_mode 	:   [x y]. x is a boolean that sets whether initial mask position is 
+%                       automatically computed (true) or not (false). y is a boolean that sets 
+%                       whether initial mask position is editable by user after being set by 
+%                       x (true) or left using the initial position (false). 
+%                       Ex: [1 1] (set automatically & and let user edit after)
+%                       Can also specifiy a mask structure saved from previous head tracker.
 %       npts        :   # of points for tracker
 %       playback    :   playback rate (show a frame in increments of "playback")
 %                       If false, then don't show anything (default = 1)
 %
 %   OUTPUT:
 %       head (structure)
-%           angle       :   head angles [°]
-%           mask        :   head mask
-%           antenna   	:   antenna angles [°]
-%           points     	:   tracked tip points
+%           angle       :   head angles in body reference frame [°]
+%           angle_glob	:   head angles in global reference frame [°]
+%           antenna     :   antenna positions
 %           clust     	:   point cluster labels
+%           points     	:   point locations
+%           tip     	:   tracked tip points
 %
+%       mask: mask structure
+
+
+%       mask: mask structure
+%
+
+if nargin < 4
+    playback = false;
+    if nargin < 3
+        npts = 10;
+        if nargin < 2
+            mask_mode = [1 1];
+        end
+    end
+end
 
 warning('off', 'MATLAB:declareGlobalBeforeUse')
 if ~rem(playback,1)==0
@@ -28,19 +49,19 @@ if ~rem(playback,1)==0
     playback = round(playback);
 end
 
-if length(set_mask) > 1  % check manually
-    auto_mask = set_mask(2);
+if length(mask_mode) > 1
+    auto_mask = mask_mode(2); % check manually baed on input
 else
-    auto_mask = true; 
+    auto_mask = true; % don't check manually
 end
 
 vid = squeeze(vid); % remove singleton dimensions
 dim = size(vid); % get size of video
 
 % Set mask
-if isstruct(set_mask(1)) % mask given
-    mask = set_mask;
-elseif set_mask(1) == 1 % set mask automatically by finding neck joint
+if isstruct(mask_mode(1)) % mask given
+    mask = mask_mode;
+elseif mask_mode(1) == 1 % set mask automatically by finding neck joint
  	disp('Finding neck ...')
     [VID,cent] = get_cut_vid(vid, 0.2, [], [0.1 0.1], 0.3); % get head vid
     [pivot,R,~,body_yaw] = get_neck(VID.out, VID.bw, cent); % find neck joint, head radius, & body angle
@@ -54,7 +75,7 @@ elseif set_mask(1) == 1 % set mask automatically by finding neck joint
     else
         close(mask.fig.main)
     end
-elseif set_mask(1) == 0 % set mask manually, start at center
+elseif mask_mode(1) == 0 % set mask manually, start at center
     pivot = [dim(2), dim(1)] ./ 2; % default is center of frame
     R = 0.1*dim(1);
     
@@ -97,7 +118,8 @@ if playback
     fColor = 'k'; % figure and main axis color
     aColor = 'w'; % axis line color
     set(fig, 'Color', fColor, 'Units', 'inches', 'Name', 'CrazyFly')
-    %fig.Position(3:4) = [9 7];
+    fig.Position(3:4) = [9 7];
+    movegui(fig, 'center')
     figure (101)
         % Raw image with tracking window
         ax(1) = subplot(3,4,1:8); hold on ; cla ; axis image

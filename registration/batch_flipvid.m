@@ -1,9 +1,9 @@
-function [] = batch_flipvid(root,varname,method,checkframe)
+function [] = batch_flipvid(root, vidvar, method, checkframe)
 %% batch_flipvid: register each frame of a video to the same reference
 %
 %   INPUT:
 %       root     	:   root directory
-%       varname     :   video variable name
+%       vidvar      :   video variable name
 %       method      :   direction to flip
 %                           'ud'        - flip vertically
 %                           'lr'        - flip horizontally
@@ -35,7 +35,7 @@ for kk = 1:length(files)
     matObj = matfile(fname, 'Writable', isWritable); % load .mat object
     if checkframe
         fig = figure ; clf ; cla
-        vid = matObj.(varname);
+        vid = matObj.(vidvar);
         frame = vid(:,:,1,1);
         imagesc(frame) ; hold on; axis off
         title(files(kk),'Interpreter', 'none')
@@ -49,13 +49,13 @@ for kk = 1:length(files)
         matObj.flipped = method;
         switch methodI
             case 1  % flip video up/down
-                matObj.(varname) = flipud(matObj.(varname));
+                matObj.(vidvar) = flipud(matObj.(vidvar));
           	case 2  % flip video left/right
-                matObj.(varname) = fliplr(matObj.(varname));
+                matObj.(vidvar) = fliplr(matObj.(vidvar));
           	case 3  % rotate video 90°
-                matObj.(varname) = rot90(matObj.(varname), 1);
+                matObj.(vidvar) = rot90(matObj.(vidvar), 1);
           	case 4  % rotate video 180°
-                matObj.(varname) = rot90(matObj.(varname), 2);
+                matObj.(vidvar) = rot90(matObj.(vidvar), 2);
             otherwise
                 error('Not possible')
         end

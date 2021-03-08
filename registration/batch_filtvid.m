@@ -15,7 +15,7 @@ function [] = batch_filtvid(root, n, Fc)
 FILES = string(FILES);
 nfile = length(FILES);
 
-filtdir = fullfile(PATH,'filtvid');
+filtdir = fullfile(PATH,'wing_filt_60');
 mkdir(filtdir)
 for file = 1:nfile
     disp(FILES(file))
@@ -26,7 +26,7 @@ for file = 1:nfile
 
     filtvid = filtfilt_vid(3.5*vidData, n, Fc, Fs);
    	for f = 1:size(filtvid,3)
-       filtvid(:,:,f) = medfilt2((filtvid(:,:,f)),9*[1 1]);
+       filtvid(:,:,f) = medfilt2(imadjust(medfilt2((filtvid(:,:,f)),9*[1 1])),5*[1 1]);
     end
     % filtvid = isolate_wing_vid(filtvid, false);
     % filtvid = 255*uint8(filtvid);
