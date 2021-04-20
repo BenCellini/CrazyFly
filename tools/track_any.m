@@ -1,7 +1,7 @@
-function [abdomen, mask] = track_abdomen(vid, set_mask, npts, playback)
-% track_abdomen: tracks insect abdomen movements
+function [bodypart, mask] = track_any(vid, set_mask, npts, playback)
+% track_any: tracks insect body part
 %
-% Tracks tip of abdomen, calculates the angle with
+% Tracks tip of bodypart, calculates the angle with
 % respect to a specififed center point.
 %
 % Sign convention for angle outputs: [CW = + , CCW = -]
@@ -14,9 +14,9 @@ function [abdomen, mask] = track_abdomen(vid, set_mask, npts, playback)
 %                       If false, then don't show anything (default = 1)
 %
 %   OUTPUT:
-%       abdomen (structure)
-%           angle       :   abdomen angles in body reference frame [°]
-%           angle_glob	:   abdomen angles in global reference frame [°]
+%       bodypart (structure)
+%           angle       :   angles in body reference frame [°]
+%           angle_glob	:   angles in global reference frame [°]
 %           clust     	:   point cluster labels
 %           points     	:   point locations
 %           tip     	:   tracked tip points
@@ -42,10 +42,7 @@ dim = size(vid); % get size of video
 % Set mask
 if isstruct(set_mask(1)) % mask given
     mask = set_mask;
-elseif set_mask(1) == 1 % set mask automatically by finding neck joint
-    %error('this ''set_mask'' method doesnt exist yet')
- 	%disp('Finding neck ...')
-    
+elseif set_mask(1) == 1 % set mask automatically by finding neck joint    
     rot_frame = imbinarize(mean(vid,3));
     [ry,rx] = find(rot_frame);
     pivot = [median(rx) , 1.2*median(ry)];
@@ -53,7 +50,7 @@ elseif set_mask(1) == 1 % set mask automatically by finding neck joint
     
     global mask
  	mask_frame = vid(:,:,1); % get 1st frame to set mask
-    mask = make_mask(pivot, 180, [0.08*R 0.3*R], [50 50], mask_frame, [1 0 1]);
+    mask = make_mask(pivot, 0, [0.08*R 0.3*R], [50 50], mask_frame, [0 1 0.5]);
     
     if auto_mask % check manually
         uiwait(mask.fig.main)
@@ -66,40 +63,41 @@ elseif set_mask(1) == 0 % set mask manually, start at center
     
     global mask
 	mask_frame = vid(:,:,1); % get 1st frame to set mask
-    mask = make_mask(pivot, 180, [0.8*R 2.2*R], [40 40], mask_frame, [1 0 1]);
+    mask = make_mask(pivot, 0, [0.8*R 2.2*R], [40 40], mask_frame, [0 1 0.5]);
     uiwait(mask.fig.main) % wait to set
 end
 disp('Mask set')
 % close
 
-% Track abdomen in all frames using tip tracker
+% Track bodypart in all frames using tip tracker
 tic
 disp('Tracking...')
 norm = 2;
 n_clust = 1;
 dthresh = 8;
 rmv_out = true;
-abdomen.angle = nan(dim(3),1);
-abdomen.angle_glob = nan(dim(3),1);
+bodypart.angle = nan(dim(3),1);
+bodypart.angle_glob = nan(dim(3),1);
 % abdomen.antenna = nan(dim(3),n_clust);
-abdomen.clust = cell(dim(3),1);
-abdomen.points = cell(dim(3),1);
-abdomen.tip = nan(dim(3),2);
+bodypart.clust = cell(dim(3),1);
+bodypart.points = cell(dim(3),1);
+bodypart.tip = nan(dim(3),2);
 pivot = mask.move_points.rot;
 SE = strel("disk",5);
 for n = 1:dim(3)
     frame = vid(:,:,n);
-    track_frame = imerode(frame,SE);
+    track_frame = frame;
+    %track_frame = imerode(frame,SE);
     %imshow(track_frame)
     [angle,m,pts,k] = tracktip(track_frame, mask.area_points, ...
         pivot, norm, npts, 'clust', n_clust, dthresh, rmv_out);
-    abdomen.angle_glob(n) = angle - 90;
-    abdomen.angle(n) = abdomen.angle_glob(n) - mask.global;
-    abdomen.points{n} = pts;
-    abdomen.clust{n} = k;
+    bodypart.angle_glob(n) = angle - 270;
+    bodypart.angle(n) = bodypart.angle_glob(n) - mask.global;
+    bodypart.points{n} = pts;
+    bodypart.clust{n} = k;
 
-    abdomen.tip(n,:) = mask.move_points.rot +  ...
-        -mask.radius.outer*[sind(abdomen.angle_glob(n)) , -cosd(abdomen.angle_glob(n))];
+    bodypart.tip(n,:) = mask.move_points.rot +  ...
+        mask.radius.outer*[sind(bodypart.angle_glob(n)) , -cosd(bodypart.angle_glob(n))];
 end
 toc
 
@@ -120,7 +118,7 @@ if playback
         ax(2) = subplot(3,4,9:12); hold on ; cla ; xlim([0 dim(3)])
             xlabel('Frame')
             ylabel('Angle (°)')
-            h.hAngle = animatedline(ax(2), 'Color', 'm', 'LineWidth', 1);
+            h.hAngle = animatedline(ax(2), 'Color', mask.color, 'LineWidth', 1);
             % ylim(5*[-1 1])
 
     set(ax, 'Color', fColor, 'LineWidth', 1.5, 'FontSize', 12, 'FontWeight', 'bold', ...
@@ -141,10 +139,10 @@ if playback
                 patch(mask.points(:,1), mask.points(:,2), ...
                     mask.color, 'FaceAlpha', 0.2, 'EdgeColor', mask.color, 'LineWidth', 0.5);
 
-                pts_left = abdomen.points{n}(abdomen.clust{n}==1,:);
-                pts_right = abdomen.points{n}(abdomen.clust{n}==2,:);
+                pts_left = bodypart.points{n}(bodypart.clust{n}==1,:);
+                pts_right = bodypart.points{n}(bodypart.clust{n}==2,:);
                 if isempty(pts_left) ||isempty(pts_right)
-                    plot(abdomen.points{n}(:,1),abdomen.points{n}(:,2), 'm.', 'MarkerSize', 5)
+                    plot(bodypart.points{n}(:,1),bodypart.points{n}(:,2), 'b.', 'MarkerSize', 5)
                 else
                     plot(pts_left(:,1),pts_left(:,2), 'r.', 'MarkerSize', 5)
                     plot(pts_right(:,1),pts_right(:,2), 'b.', 'MarkerSize', 5)
@@ -153,7 +151,7 @@ if playback
                 plot([pivot(1) mask.move_points.axis(1)], [pivot(2) mask.move_points.axis(2)], ...
                     '--', 'Color', 0.5*mask.color, 'LineWidth', 0.5)
                 
-                plot([pivot(1) abdomen.tip(n,1)], [pivot(2) abdomen.tip(n,2)], ...
+                plot([pivot(1) bodypart.tip(n,1)], [pivot(2) bodypart.tip(n,2)], ...
                     'Color', mask.color, 'LineWidth', 2)
 
                 plot(pivot(1), pivot(2), '.', 'Color', mask.color, 'MarkerSize', 10)
@@ -161,7 +159,7 @@ if playback
 
         % Display angle
         ax(2) = subplot(3,4,9:12); % angles
-            addpoints(h.hAngle, n, abdomen.angle_glob(n))
+            addpoints(h.hAngle, n, bodypart.angle_glob(n))
 
         pause(0.0005) % give time for images to display
     end

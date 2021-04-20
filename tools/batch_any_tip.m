@@ -1,5 +1,5 @@
-function [] = batch_abdomen_tip(root, vidvar, npts, mask_mode, loop_mask, playback)
-%% batch_abdomen_tip: runs abdomen tracker for user selected video files
+function [] = batch_any_tip(root, vidvar, npts, mask_mode, loop_mask, playback)
+%% batch_any_tip: runs tip tracker for user selected video files
 %
 %   INPUT:
 %       root        :   root directory
@@ -30,9 +30,9 @@ function [] = batch_abdomen_tip(root, vidvar, npts, mask_mode, loop_mask, playba
 FILES = string(FILES);
 nfile = length(FILES);
 
-abdomen_dir = fullfile(PATH,'tracked_abdomen_tip');
-mkdir(abdomen_dir)
-abdomen_mask = mask_mode;
+bodypart_dir = fullfile(PATH,'tracked_bodypart_tip');
+mkdir(bodypart_dir)
+bodypart_mask = mask_mode;
 for file = 1:nfile
     disp(FILES(file))
     disp('---------------------------------------')
@@ -43,14 +43,14 @@ for file = 1:nfile
     vid = Data.(vidvar);
 
     % Run tracker
-    [abdomen_data, abdomen_mask] = track_abdomen(vid, abdomen_mask, npts, playback);
+    [bodypart, bodypart_mask] = track_any(vid, bodypart_mask, npts, playback);
     
- 	save(fullfile(abdomen_dir,FILES{file}),'-v7.3','abdomen_data', 'abdomen_mask', 't_v')
+ 	save(fullfile(bodypart_dir,FILES{file}),'-v7.3','bodypart', 'bodypart_mask', 't_v')
     
     if loop_mask
         % use last mask for next file
     else
-        abdomen_mask = mask_mode; % make new mask for netx file
+        bodypart_mask = mask_mode; % make new mask for netx file
     end
                                                                        
 end
