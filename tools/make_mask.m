@@ -2,7 +2,6 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     if (nargin < 6) || isempty(mask_color)
         mask_color = [0 1 1];
     end
-    mask_color = colorspec2rgb(mask_color);
 
     global H mask
     clear mask
@@ -13,8 +12,24 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     mask.sym = true;
     
     % Main window
-    mask.fig.main = figure('Name', 'CrazyFly', 'Color', [0.3 0.3 0.3]);
+    mask.fig.main = figure('Name', 'Flyalyzer', 'Color', [0.3 0.3 0.3]);
     imshow(frame)
+    
+    fig_w = mask.fig.main.Position(3);
+	fig_h = mask.fig.main.Position(4);
+    
+    % UI Controls
+    H.sym = uicontrol('style','checkbox','units','pixels', 'Value', mask.sym, ...
+                    'position',[10,0.05*fig_h,70,15],'string','symmetric');
+    set(H.sym, 'callback', @(src, event) sym_call(src, event, H));
+
+    H.zero = uicontrol('style','edit','units','pixels', ...
+                    'position',[10,0.1*fig_h,50,15],'string','0');
+    set(H.zero, 'callback', @(src, event) zero_call(src, event, H));
+    
+    H.done = uicontrol('style','pushbutton','units','pixels', 'Value', false, ...
+                    'position',[10,0.01*fig_h,50,15],'string','Done');
+    set(H.done, 'callback', @(src, event) done_call(src, event, H));
     
     % Get frame to set mask
     mask.image = frame;
@@ -26,7 +41,7 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     mask.radius.outer = R(2); % outer mask radius
     mask.radius.axis = mask.radius.outer; % axis radius
     mask.span = span; % angular span of mask [+,-] [°]
-
+    
     % Define rotation point
     hold on
     mask.move.rot = drawpoint('Position', rot, 'Color', mask.color);
@@ -35,13 +50,8 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     
     % Define mask angles in global frame
     mask.left_angle = mask.global - mask.span(1); % left angle in global [°]
-    mask.right_angle = mask.global + mask.span(2); % right angle in global [°]
+    mask.right_angle = mask.global + mask.span(2); % left angle in global [°]
     mask.angles = (mask.left_angle:1:mask.right_angle)'; % angles in between edges of mask
-    
-    % Define initial reference angle & radius
-	mask.init.radius = mean([mask.radius.inner, mask.radius.outer]); % radius of initial refercne angle
-    mask.init.angle = 0; % initial reference angle [°]
-    mask.init.color = [1 0 0];
     
     % Define arc coordinates
     inner_cent_pos = mask.move.rot.Position + ...
@@ -55,11 +65,6 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     axis_pos = mask.move.rot.Position - ...
         2*mask.radius.axis*[sind(mask.global) , -cosd(mask.global)];
     
-    % Point to define initial reference angle
-	init_pos = mask.move.rot.Position + ...
-        mask.init.radius*[sind(mask.global + mask.init.angle) , ...
-        -cosd(mask.global + mask.init.angle)];
-    
     % Make the movable mask ROI points
     mask.move.inner_C = drawpoint('Position', inner_cent_pos, ...
         'Color', mask.color, 'MarkerSize', mask.mrk_sz);    
@@ -71,8 +76,6 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
         'Color', mask.color, 'MarkerSize', mask.mrk_sz);
     mask.move.axis = drawpoint('Position', axis_pos, ...
         'Color', mask.color, 'MarkerSize', mask.mrk_sz);
-    mask.move.init = drawpoint('Position', init_pos, ...
-        'Color', mask.init.color, 'MarkerSize', ceil(1.5*mask.mrk_sz));
     
     % Listeners to move mask
     addlistener(mask.move.rot, 'MovingROI', @rot_point);
@@ -87,40 +90,18 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     addlistener(mask.move.outer_R, 'ROIMoved', @outer_right);
     addlistener(mask.move.axis, 'MovingROI', @axis);
     addlistener(mask.move.axis, 'ROIMoved', @axis);
-    addlistener(mask.move.init, 'MovingROI', @init);
-    addlistener(mask.move.init, 'ROIMoved', @init);
-    
-    % UI Controls
-    fig_w = mask.fig.main.Position(3);
-	fig_h = mask.fig.main.Position(4);
-    H.sym = uicontrol('style','checkbox','units','pixels', 'Value', mask.sym, ...
-                    'position',[10,0.055*fig_h,70,15],'string','symmetric');
-    set(H.sym, 'callback', @(src, event) sym_call(src, event, H));
-
-    H.global = uicontrol('style','edit','units','pixels', ...
-                    'position',[10,0.15*fig_h,50,15],'string','0');
-    set(H.global, 'callback', @(src, event) global_call(src, event, H), 'BackgroundColor', [0 1 0]);
-    
-    H.init = uicontrol('style','edit','units','pixels', ...
-                    'position',[10,0.1*fig_h,50,15],'string','0');
-    set(H.init, 'callback', @(src, event) init_call(src, event, H), 'BackgroundColor', mask.init.color);
-    
-    H.done = uicontrol('style','pushbutton','units','pixels', 'Value', false, ...
-                    'position',[10,0.01*fig_h,50,15],'string','Done');
-    set(H.done, 'callback', @(src, event) done_call(src, event, H));
     
     % Draw mask
     mask.patch = [];
     mask.axis = [];
     mask.axis_reverse = [];
-    mask.init_line = [];
     mask = draw_mask(mask);
     mask = get_ROI(mask);
 end
 
 function mask = draw_mask(mask)
     % Define new mask angles
-    %mask.span(mask.span < 0) = mask.span(mask.span < 0) + 360;
+    mask.span(mask.span < 0) = mask.span(mask.span < 0) + 360;
     mask.angles = (mask.global + ( -mask.span(1):mask.span(2) ))';
     mask.left_angle = mask.angles(1);
     mask.right_angle = mask.angles(end);
@@ -142,31 +123,25 @@ function mask = draw_mask(mask)
         mask.radius.outer*[sind(mask.right_angle) , -cosd(mask.right_angle)];
     mask.move.axis.Position = mask.move.rot.Position - ...
         mask.radius.axis*[sind(mask.global) , -cosd(mask.global)];
-    mask.move.init.Position = mask.move.rot.Position + ...
-        mask.init.radius*[sind(mask.global + mask.init.angle) , -cosd(mask.global + mask.init.angle)];
     
     % Annotate the mask ROI reigon
     delete(mask.patch)
-    delete([mask.axis mask.axis_reverse mask.init_line])
+    delete([mask.axis mask.axis_reverse])
     mask.patch = patch(mask.points(:,1), mask.points(:,2), ...
         mask.color, 'FaceAlpha', 0.2, 'EdgeColor', mask.color, 'LineWidth', 1);
     mask.axis = plot([mask.move.rot.Position(1) mask.move.outer_C.Position(1)], ...
         [mask.move.rot.Position(2) mask.move.outer_C.Position(2)], ...
-         '--', 'Color', mask.color, 'LineWidth', 0.25);
+         '--', 'Color', mask.color', 'LineWidth', 0.25);
     mask.axis_reverse = plot([mask.move.axis.Position(1) mask.move.rot.Position(1)], ...
         [mask.move.axis.Position(2) mask.move.rot.Position(2)], ...
-         '--', 'Color', mask.color, 'LineWidth', 0.25);
-    mask.init_line = plot([mask.move.rot.Position(1) mask.move.init.Position(1)], ...
-        [mask.move.rot.Position(2) mask.move.init.Position(2)], ...
-         '-', 'Color', mask.init.color, 'LineWidth', 0.25);
+         '-', 'Color', mask.color', 'LineWidth', 0.25);
      
     % Store the points
     mask.move_points = structfun(@(x) x.Position, mask.move, 'UniformOutput', false);
      
 	% Update global heading display
 	global H
-	H.global.String = string(mask.global);
-    H.init.String = string(mask.init.angle);
+	H.zero.String = string(mask.global);
 end
 
 function mask = get_ROI(mask, frame, showplot)
@@ -271,7 +246,7 @@ function outer_left(src,evt)
             end
             
             shift = evt.CurrentPosition - mask.move.rot.Position;
-            mask.radius.outer = sqrt(shift(1)^(2) + shift(2)^(2));
+            mask.radius.outer = sqrt(shift(1)^(2) + shift(2)^(2));           
             mask = draw_mask(mask);
         case{'ROIMoved'}
             mask = get_ROI(mask);
@@ -310,36 +285,16 @@ function inner_C(src,evt)
     end
 end
 
-function init(src,evt)
-    global mask
-    evname = evt.EventName;
-    switch(evname)
-        case{'MovingROI'}
-            shift = mask.move.rot.Position - evt.CurrentPosition;
-            mask.init.angle = rad2deg(atan2(-shift(1), shift(2))) - mask.global;
-          	mask.init.radius = sqrt(shift(1)^(2) + shift(2)^(2));
-            mask = draw_mask(mask);
-        case{'ROIMoved'}
-            mask = get_ROI(mask);
-    end
-end
-
 % Symmetric checkbox callback
 function sym_call(src, event, H)
     global mask
     mask.sym = H.sym.Value;
 end
 
-% Global callback
-function global_call(src, event, H)
+% Zero global callback
+function zero_call(src, event, H)
     global mask
-    mask.global = str2double(H.global.String);
-    mask = draw_mask(mask);
-end
-% Initial callback
-function init_call(src, event, H)
-    global mask
-    mask.init.angle = str2double(H.init.String);
+    mask.global = str2double(H.zero.String);
     mask = draw_mask(mask);
 end
 
@@ -350,7 +305,7 @@ function done_call(src, event, H)
 end
 
 function clear_mask(mask)
-    %delete(mask.move.rot)
+    delete(mask.move.rot)
     delete(mask.move.inner_C)
     delete(mask.move.outer_C)
     delete(mask.move.outer_L)

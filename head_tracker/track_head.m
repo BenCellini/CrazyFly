@@ -29,6 +29,10 @@ function [head, mask] = track_head(vid, mask_mode, npts, playback)
 %
 %       mask: mask structure
 
+
+%       mask: mask structure
+%
+
 if nargin < 4
     playback = false;
     if nargin < 3
@@ -94,10 +98,8 @@ head.points = cell(dim(3),1);
 head.tip = nan(dim(3),2);
 pivot = mask.move_points.rot;
 for n = 1:dim(3)   
-%     [angle,m,pts,k] = tracktip(vid(:,:,n), mask.area_points, ...
-%         pivot, norm, npts, 'clust');
     [angle,m,pts,k] = tracktip(vid(:,:,n), mask.area_points, ...
-        pivot, norm, npts, 'dist', [20 80]);
+        pivot, norm, npts, 'clust');
     head.angle_glob(n) = angle - 270;
     head.angle(n) = head.angle_glob(n) - mask.global;
     head.antenna(n,:) = m' - 270;

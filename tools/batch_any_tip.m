@@ -1,4 +1,4 @@
-function [] = batch_any_tip(root, vidvar, npts, mask_mode, loop_mask, offsetAngle, playback)
+function [] = batch_any_tip(root, vidvar, npts, mask_mode, loop_mask, playback)
 %% batch_any_tip: runs tip tracker for user selected video files
 %
 %   INPUT:
@@ -24,7 +24,6 @@ function [] = batch_any_tip(root, vidvar, npts, mask_mode, loop_mask, offsetAngl
 % npts = 150;
 % mask_mode = [1 1];
 % loop_mask = true;
-% offsetAngle = [];
 % playback = 20;
 
 [FILES, PATH] = uigetfile({'*.mat', 'MAT-files'},'Select videos', root, 'MultiSelect','on');
@@ -44,9 +43,9 @@ for file = 1:nfile
     vid = Data.(vidvar);
 
     % Run tracker
-    [bodypart, bodypart_mask, offsetAngle] = track_any(vid, bodypart_mask, npts, offsetAngle, playback);
+    [bodypart, bodypart_mask] = track_any(vid, bodypart_mask, npts, playback);
     
- 	save(fullfile(bodypart_dir,FILES{file}),'-v7.3','bodypart', 'bodypart_mask', 't_v', 'offsetAngle')
+ 	save(fullfile(bodypart_dir,FILES{file}),'-v7.3','bodypart', 'bodypart_mask', 't_v')
     
     if loop_mask
         % use last mask for next file
