@@ -1,4 +1,4 @@
-function [bodypart, mask] = track_any(vid, set_mask, npts, playback)
+function [bodypart, mask, offsetAngle] = track_any(vid, set_mask, npts, offsetAngle, playback)
 % track_any: tracks insect body part
 %
 % Tracks tip of bodypart, calculates the angle with
@@ -23,6 +23,14 @@ function [bodypart, mask] = track_any(vid, set_mask, npts, playback)
 %
 %       mask: mask structure
 %
+
+
+if nargin < 5
+    playback = true;
+    if nargin < 4
+        offsetAngle = 0;
+    end
+end
 
 warning('off', 'MATLAB:declareGlobalBeforeUse')
 if ~rem(playback,1)==0
@@ -91,11 +99,14 @@ for n = 1:dim(3)
     %imshow(track_frame)
     [angle,m,pts,k] = tracktip(track_frame, mask.area_points, ...
         pivot, norm, npts, 'clust', n_clust, dthresh, rmv_out);
-    bodypart.angle_glob(n) = angle - 270;
-    bodypart.angle(n) = bodypart.angle_glob(n) - mask.global;
     bodypart.points{n} = pts;
     bodypart.clust{n} = k;
-
+    if isempty(offsetAngle) && (n == 1)
+       offsetAngle = angle - 270 - mask.global - mask.init.angle; 
+    end
+    bodypart.angle_glob(n) = angle - 270 - offsetAngle;
+    bodypart.angle(n) = bodypart.angle_glob(n) - mask.global;
+    
     bodypart.tip(n,:) = mask.move_points.rot +  ...
         mask.radius.outer*[sind(bodypart.angle_glob(n)) , -cosd(bodypart.angle_glob(n))];
 end
@@ -115,7 +126,7 @@ if playback
         ax(1) = subplot(3,4,1:8); hold on ; cla ; axis image
 
         % Head angle window
-        ax(2) = subplot(3,4,9:12); hold on ; cla ; xlim([0 dim(3)])
+        ax(2) = subplot(3,4,9:12); hold on ; cla ; xlim([-0.02*dim(3) dim(3)])
             xlabel('Frame')
             ylabel('Angle (°)')
             h.hAngle = animatedline(ax(2), 'Color', mask.color, 'LineWidth', 1);
@@ -159,7 +170,7 @@ if playback
 
         % Display angle
         ax(2) = subplot(3,4,9:12); % angles
-            addpoints(h.hAngle, n, bodypart.angle_glob(n))
+            addpoints(h.hAngle, n, bodypart.angle(n))
 
         pause(0.0005) % give time for images to display
     end

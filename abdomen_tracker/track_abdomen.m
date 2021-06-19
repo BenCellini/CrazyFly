@@ -94,7 +94,7 @@ for n = 1:dim(3)
     [angle,m,pts,k] = tracktip(track_frame, mask.area_points, ...
         pivot, norm, npts, 'clust', n_clust, dthresh, rmv_out);
     abdomen.angle_glob(n) = angle - 90;
-    abdomen.angle(n) = abdomen.angle_glob(n) - mask.global;
+    abdomen.angle(n) = abdomen.angle_glob(n) - mask.global - 180;
     abdomen.points{n} = pts;
     abdomen.clust{n} = k;
 
@@ -161,7 +161,7 @@ if playback
 
         % Display angle
         ax(2) = subplot(3,4,9:12); % angles
-            addpoints(h.hAngle, n, abdomen.angle_glob(n))
+            addpoints(h.hAngle, n, abdomen.angle(n))
 
         pause(0.0005) % give time for images to display
     end

@@ -1,5 +1,5 @@
-function [head, mask] = track_head(vid, mask_mode, npts, playback)
-% track_head: tracks insect head movments with two visible antenna
+function [wing, mask] = track_wing(vid, mask_mode, npts, playback)
+% track_wing: tracks insect head movments with two visible antenna
 %
 % Tracks antenna tips on fly head calculates the angle with
 % respect to a specififed center point.
@@ -28,6 +28,7 @@ function [head, mask] = track_head(vid, mask_mode, npts, playback)
 %           tip     	:   tracked tip points
 %
 %       mask: mask structure
+%
 
 if nargin < 4
     playback = false;
@@ -86,26 +87,19 @@ disp('Mask set')
 tic
 disp('Tracking...')
 norm = 2;
-head.angle = nan(dim(3),1);
-head.angle_glob = nan(dim(3),1);
-head.antenna = nan(dim(3),2);
-head.clust = cell(dim(3),1);
-head.points = cell(dim(3),1);
-head.tip = nan(dim(3),2);
+wing.angle = nan(dim(3),1);
+wing.angle_glob = nan(dim(3),1);
+wing.antenna = nan(dim(3),2);
+wing.clust = cell(dim(3),1);
+wing.points = cell(dim(3),1);
+wing.tip = nan(dim(3),2);
 pivot = mask.move_points.rot;
 for n = 1:dim(3)   
-%     [angle,m,pts,k] = tracktip(vid(:,:,n), mask.area_points, ...
-%         pivot, norm, npts, 'clust');
-    [angle,m,pts,k] = tracktip(vid(:,:,n), mask.area_points, ...
-        pivot, norm, npts, 'dist', [20 80]);
-    head.angle_glob(n) = angle - 270;
-    head.angle(n) = head.angle_glob(n) - mask.global;
-    head.antenna(n,:) = m' - 270;
-    head.points{n} = pts;
-    head.clust{n} = k;
-
-    head.tip(n,:) = mask.move_points.rot +  ...
-        mask.radius.outer*[sind(head.angle_glob(n)) , -cosd(head.angle_glob(n))];
+    [angle,tip] = trackedge(vid(:,:,n), mask.area_points, ...
+        pivot, norm, false);
+    wing.angle_glob(n) = angle - 270;
+    wing.angle(n) = wing.angle_glob(n) - mask.global;
+    wing.tip(n,:) = tip;
 end
 toc
 
@@ -122,12 +116,11 @@ if playback
         % Raw image with tracking window
         ax(1) = subplot(3,4,1:8); hold on ; cla ; axis image
 
-        % Head angle window
+        % Tracking angle window
         ax(2) = subplot(3,4,9:12); hold on ; cla ; xlim([0 dim(3)])
             xlabel('Frame')
             ylabel('Angle (°)')
             h.hAngle = animatedline(ax(2), 'Color', 'c', 'LineWidth', 1);
-            % ylim(5*[-1 1])
 
     set(ax, 'Color', fColor, 'LineWidth', 1.5, 'FontSize', 12, 'FontWeight', 'bold', ...
         'YColor', aColor, 'XColor',aColor)
@@ -143,23 +136,14 @@ if playback
         if (n==1) || (~mod(n,playback)) || (n==dim(3)) % at playback rate
             % Show images with tracking annotation
             ax(1) = subplot(3,4,1:8); cla % frame & tracking
-                imshow(vid(:,:,n)) ; hold on ; title(angle)
+                imshow(imadjust(vid(:,:,n))) ; hold on ; title(angle)
                 patch(mask.points(:,1), mask.points(:,2), ...
                     mask.color, 'FaceAlpha', 0.2, 'EdgeColor', mask.color, 'LineWidth', 0.5);
-
-                pts_left = head.points{n}(head.clust{n}==1,:);
-                pts_right = head.points{n}(head.clust{n}==2,:);
-                if isempty(pts_left) ||isempty(pts_right)
-                    plot(head.points{n}(:,1),head.points{n}(:,2), 'm.', 'MarkerSize', 5)
-                else
-                    plot(pts_left(:,1),pts_left(:,2), 'r.', 'MarkerSize', 5)
-                    plot(pts_right(:,1),pts_right(:,2), 'b.', 'MarkerSize', 5)
-                end
 
                 plot([pivot(1) mask.move_points.axis(1)], [pivot(2) mask.move_points.axis(2)], ...
                     '--', 'Color', 0.5*mask.color, 'LineWidth', 0.5)
                 
-                plot([pivot(1) head.tip(n,1)], [pivot(2) head.tip(n,2)], ...
+                plot([pivot(1) wing.tip(n,1)], [pivot(2) wing.tip(n,2)], ...
                     'Color', mask.color, 'LineWidth', 2)
 
                 plot(pivot(1), pivot(2), '.', 'Color', mask.color, 'MarkerSize', 10)
@@ -167,7 +151,7 @@ if playback
 
         % Display angle
         ax(2) = subplot(3,4,9:12); % angles
-            addpoints(h.hAngle, n, head.angle(n))
+            addpoints(h.hAngle, n, wing.angle(n))
 
         pause(0.0005) % give time for images to display
     end

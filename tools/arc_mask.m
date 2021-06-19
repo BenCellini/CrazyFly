@@ -271,7 +271,7 @@ function outer_left(src,evt)
             end
             
             shift = evt.CurrentPosition - mask.move.rot.Position;
-            mask.radius.outer = sqrt(shift(1)^(2) + shift(2)^(2));
+            mask.radius.outer = sqrt(shift(1)^(2) + shift(2)^(2));           
             mask = draw_mask(mask);
         case{'ROIMoved'}
             mask = get_ROI(mask);
@@ -350,7 +350,7 @@ function done_call(src, event, H)
 end
 
 function clear_mask(mask)
-    %delete(mask.move.rot)
+    delete(mask.move.rot)
     delete(mask.move.inner_C)
     delete(mask.move.outer_C)
     delete(mask.move.outer_L)
