@@ -2,11 +2,12 @@ function [] = batch_filtvid(root, n, Fc)
 %% batch_filtvid: low-pass filter videos in time, save to new folder
 %
 %   INPUT:
-%       vid         : video data
-%       n           : # frames to filter
+%       vid : video data
+%       n   : # frames to filter
+%       Fc	: cut off frequency [hz]
 %
 %   OUTPUT:
-%       VID         : filtered video data
+%       -
 %
 
 % root = 'H:\EXPERIMENTS\RIGID\Experiment_Ramp_30_HeadFixed';
@@ -17,6 +18,7 @@ nfile = length(FILES);
 
 filtdir = fullfile(PATH,'filt');
 mkdir(filtdir)
+SE = strel('disk',5,8);
 for file = 1:nfile
     disp(FILES(file))
     disp('---------------------------------------')
@@ -26,7 +28,11 @@ for file = 1:nfile
 
     filtvid = filtfilt_vid(2.5*vidData, n, Fc, Fs);
    	for f = 1:size(filtvid,3)
-       filtvid(:,:,f) = medfilt2(imadjust(medfilt2((filtvid(:,:,f)),9*[1 1])),5*[1 1]);
+        frame = filtvid(:,:,f);
+        frame = medfilt2(3*imadjust(medfilt2((frame),9*[1 1])),9*[1 1]);
+        frame = imdilate(frame, SE);
+        %frame = 255*imbinarize(frame);
+        filtvid(:,:,f) = frame;
     end
     % filtvid = isolate_wing_vid(filtvid, false);
     % filtvid = 255*uint8(filtvid);

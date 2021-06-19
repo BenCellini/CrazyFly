@@ -3,6 +3,7 @@ function [angle,m,pts,k] = tracktip(img, mask, rot, norm, npts, mode, arg, dthre
 %
 %   INPUT:
 %       img   	:   image to track tip
+%       mask    :   mask logical matrix
 %       rot    	:   rotation point
 %       norm   	:   normalize contrast based on entire image or just ROI
 %       npts 	:   # points to track
@@ -14,8 +15,9 @@ function [angle,m,pts,k] = tracktip(img, mask, rot, norm, npts, mode, arg, dthre
 %
 %   OUTPUT:
 %       angle 	: measured angle [°]
+%       m       : mean of each tip cluster
 %       pts   	: point locations
-%       bw      : binarized image
+%       k       : cluster groups
 %
 
 if nargin < 9
@@ -96,6 +98,10 @@ else
     x = x(rix);
     y = y(rix);
     pts = [x, y];
+    
+%     cla ; imshow(img) ; hold on
+%     plot(x,y,'m.')
+%     pause(0.0001)
     
     % Get angle from points
     switch mode
@@ -182,6 +188,12 @@ else
                 if new_flag
                    %angle = nan; 
                 end
+                
+%                 if (angle-270) > 12
+%                     imshow(bw); hold on
+%                     plot(x,y,'m.')
+%                     disp(angle)
+%                 end
 
             end
     end
