@@ -1,4 +1,4 @@
-function [bodypart, mask, offsetAngle] = track_any(vid, set_mask, npts, offsetAngle, playback)
+function [bodypart, mask, offsetAngle] = track_any(vid, set_mask, npts, offsetAngle, playback, vidpath)
 % track_any: tracks insect body part
 %
 % Tracks tip of bodypart, calculates the angle with
@@ -10,8 +10,10 @@ function [bodypart, mask, offsetAngle] = track_any(vid, set_mask, npts, offsetAn
 %       vid         :   video matrix
 %       set_mask  	:   predefined mask or 2x1: [1 1] = auto place mask and let user adjust
 %       npts        :   # of points for tracker (if nan then track all points)
+%       offsetAngle :   offset angle from tracked tip to true angle
 %       playback    :   playback rate (show a frame in increments of "playback")
 %                       If false, then don't show anything (default = 1)
+%       export      : file path to export to .mp4
 %
 %   OUTPUT:
 %       bodypart (structure)
@@ -24,12 +26,20 @@ function [bodypart, mask, offsetAngle] = track_any(vid, set_mask, npts, offsetAn
 %       mask: mask structure
 %
 
-
-if nargin < 5
-    playback = true;
-    if nargin < 4
-        offsetAngle = 0;
+if nargin < 6
+    vidpath = [];
+    if nargin < 5
+        playback = true;
+        if nargin < 4
+            offsetAngle = 0;
+        end
     end
+end
+
+if ~isempty(vidpath)
+    export = true;
+else
+    export = false;
 end
 
 warning('off', 'MATLAB:declareGlobalBeforeUse')
@@ -91,7 +101,7 @@ bodypart.clust = cell(dim(3),1);
 bodypart.points = cell(dim(3),1);
 bodypart.tip = nan(dim(3),2);
 pivot = mask.move_points.rot;
-SE = strel("disk",5);
+% SE = strel("disk",5);
 for n = 1:dim(3)
     frame = vid(:,:,n);
     track_frame = frame;
@@ -136,6 +146,12 @@ if playback
         'YColor', aColor, 'XColor',aColor)
     set(fig, 'Visible', 'on')
     
+    if export
+        VID = VideoWriter(vidpath,'MPEG-4');
+        VID.FrameRate = 100;
+        open(VID)
+    end
+    
     for n = 1:dim(3)
         % Display frame count every every 100 frames
         if (n==1) || ~mod(n,100) || (n==dim(3))
@@ -173,6 +189,14 @@ if playback
             addpoints(h.hAngle, n, bodypart.angle(n))
 
         pause(0.0005) % give time for images to display
+        
+        if export
+          	fig_frame = getframe(fig);
+         	writeVideo(VID, fig_frame); 
+        end
+    end
+    if export
+       close(VID) 
     end
 end
 

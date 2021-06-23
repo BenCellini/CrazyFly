@@ -1,4 +1,4 @@
-function [] = batch_any_tip(root, vidvar, npts, mask_mode, loop_mask, offsetAngle, playback)
+function [] = batch_any_tip(root, vidvar, npts, mask_mode, loop_mask, offsetAngle, playback, export)
 %% batch_any_tip: runs tip tracker for user selected video files
 %
 %   INPUT:
@@ -14,6 +14,7 @@ function [] = batch_any_tip(root, vidvar, npts, mask_mode, loop_mask, offsetAngl
 %       loop_mask   :   if true, then only set mask for 1st file
 %       playback    :   playback rate (show a frame in increments of "playback")
 %                       If false, then don't show anything (default = 1)
+%       export      : (boolean) export video as .mp4
 %
 %   OUTPUT:
 %       -
@@ -21,7 +22,7 @@ function [] = batch_any_tip(root, vidvar, npts, mask_mode, loop_mask, offsetAngl
 
 % root = 'E:\EXPERIMENTS\MAGNO\Experiment_SS_vel_250_body_fixed';
 % vidvar = 'vidData';
-% npts = 150;
+% npts = 250;
 % mask_mode = [1 1];
 % loop_mask = true;
 % offsetAngle = [];
@@ -29,24 +30,31 @@ function [] = batch_any_tip(root, vidvar, npts, mask_mode, loop_mask, offsetAngl
 
 [FILES, PATH] = uigetfile({'*.mat', 'MAT-files'},'Select videos', root, 'MultiSelect','on');
 FILES = string(FILES);
-nfile = length(FILES);
+n_file = length(FILES);
 
 bodypart_dir = fullfile(PATH,'tracked_bodypart_tip');
 mkdir(bodypart_dir)
 bodypart_mask = mask_mode;
-for file = 1:nfile
-    disp(FILES(file))
+for n = 1:n_file
+    disp(FILES(n))
     disp('---------------------------------------')
     
     % Load data
-    Data = load(fullfile(PATH,FILES(file)));
-    t_v = Data.t_v;
+    Data = load(fullfile(PATH,FILES(n)));
+    %t_v = Data.t_v;
     vid = Data.(vidvar);
-
-    % Run tracker
-    [bodypart, bodypart_mask, offsetAngle] = track_any(vid, bodypart_mask, npts, offsetAngle, playback);
+    vid = rot90(vid,2);
+    [~,basename] = fileparts(FILES(n));
     
- 	save(fullfile(bodypart_dir,FILES{file}),'-v7.3','bodypart', 'bodypart_mask', 't_v', 'offsetAngle')
+    if export
+       vidpath = fullfile(bodypart_dir, [char(basename) '.mp4']);
+    end
+    
+    % Run tracker
+    [bodypart, bodypart_mask, offsetAngle] = track_any(vid, bodypart_mask, ...
+        npts, offsetAngle, playback, vidpath);
+    
+ 	save(fullfile(bodypart_dir,FILES{n}),'-v7.3','bodypart', 'bodypart_mask', 'offsetAngle')
     
     if loop_mask
         % use last mask for next file
