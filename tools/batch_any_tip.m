@@ -48,6 +48,8 @@ for n = 1:n_file
     
     if export
        vidpath = fullfile(bodypart_dir, [char(basename) '.mp4']);
+    else
+        vidpath = [];
     end
     
     % Run tracker

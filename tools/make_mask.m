@@ -30,8 +30,8 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     % Define rotation point
     hold on
     mask.move.rot = drawpoint('Position', rot, 'Color', mask.color);
-    mask.mrk_sz = 0.7 * mask.move.rot.MarkerSize;
-    mask.move.rot.MarkerSize = mask.mrk_sz;
+    %mask.mrk_sz = 0.7 * mask.move.rot.MarkerSize;
+    %mask.move.rot.MarkerSize = mask.mrk_sz;
     
     % Define mask angles in global frame
     mask.left_angle = mask.global - mask.span(1); % left angle in global [°]
@@ -62,17 +62,17 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     
     % Make the movable mask ROI points
     mask.move.inner_C = drawpoint('Position', inner_cent_pos, ...
-        'Color', mask.color, 'MarkerSize', mask.mrk_sz);    
+        'Color', mask.color);
     mask.move.outer_C = drawpoint('Position', outer_cent_pos, ...
-        'Color', mask.color, 'MarkerSize', mask.mrk_sz);
+        'Color', mask.color);
     mask.move.outer_L = drawpoint('Position', outer_left_pos, ...
-        'Color', mask.color, 'MarkerSize', mask.mrk_sz);
+        'Color', mask.color);
     mask.move.outer_R = drawpoint('Position', outer_right_pos, ...
-        'Color', mask.color, 'MarkerSize', mask.mrk_sz);
+        'Color', mask.color);
     mask.move.axis = drawpoint('Position', axis_pos, ...
-        'Color', mask.color, 'MarkerSize', mask.mrk_sz);
+        'Color', mask.color);
     mask.move.init = drawpoint('Position', init_pos, ...
-        'Color', mask.init.color, 'MarkerSize', ceil(1.5*mask.mrk_sz));
+        'Color', mask.init.color);
     
     % Listeners to move mask
     addlistener(mask.move.rot, 'MovingROI', @rot_point);
