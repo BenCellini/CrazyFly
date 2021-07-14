@@ -1,25 +1,35 @@
-function [heading,flip,new_frame,bias,ax,fig] = findheading(frame, debug, ratio)
-%% findheading: find heading of fly in grey-scale image
+function [heading,flip,fly_frame,bias,ax,fig] = getflyroi(frame, yx, ratio, debug, check)
+%% getflyroi: find heading of fly in grey-scale image
 %
 %   INPUT:
 %       frame    	:   frame to extract heading
-%       debug       :   show debug figure 0=never, 1=always, 2=if close call (default = 2)
+%       yx          :   if not empty, fix the size of the image aroudn the centroid [ysize, xsize]
 %      	ratio       :   frame ratio to compare top & bottom (default = 1/4)
+%       debug       :   show debug figure 0=never, 1=always, 2=if close call (default = 2)
+%       check       :   if the heading metric is below this value, then let user check the heading
+%                       manually. Only matters if debug is set to "2".
 %
 %   OUTPUT:
 %       heading  	:   heading orientation angle [°]
-%       flip      	:   should we flip the heading? (0 = no: head at top, 
+%       flip      	:   should we flip the heading? (0 = no: head at top,
 %                       1 = yes: head at bottom)
+%       fly_frame   :  	part of image with fly rotated to be either 0° (head top) or 180° (head bottom)
 %       bias        :   ratio between upper and lower quadrant (values
 %                       close to 1 are more ambiguous)
 %       ax          :   axes handles
 %       fig         :   figure handle
 %
 
-if nargin < 3
-    ratio = 1/4; % default
-    if nargin < 2
-        debug = 2; % default
+if nargin < 5
+    check = 0.1;
+    if nargin < 4
+        debug = 2;
+        if nargin < 3
+            ratio = 1/4;
+            if nargin < 2
+               yx = []; 
+            end
+        end
     end
 end
 
@@ -44,9 +54,16 @@ imgstats = regionprops(check_frame,'Centroid','Orientation','Image'); % image re
 [~,mI] = max(cellfun(@numel,{imgstats.Image}));
 check_frame = imgstats(mI).Image;
 
-imgstats = regionprops(imbinarize(head_frame),'BoundingBox','Image'); % image reigon properties
+imgstats = regionprops(imbinarize(head_frame),'BoundingBox','Image','Centroid'); % image reigon properties
 [~,flyIdx] = max(cellfun(@(x) numel(x), {imgstats.Image}));
-head_frame = imcrop(head_frame,imgstats(flyIdx).BoundingBox);
+
+if isempty(yx)
+    bb = imgstats(flyIdx).BoundingBox;
+else
+    cent = round(imgstats(flyIdx).Centroid);
+    bb = [cent(1) - round(yx(2)/2), cent(2) - round(yx(1)/2), yx(2), yx(1)];
+end
+head_frame = imcrop(head_frame, bb-1);
 
 % Get size & centroid of image
 dim = size(check_frame);
@@ -78,7 +95,7 @@ if bias < 1 % head is at the top (correct guess)
     flip = false;
     top_color = 'r';
     bot_color = 'b';
-    new_frame = head_frame;
+    fly_frame = head_frame;
 elseif bias > 1 % head is at the bottom (inccorrect guess)
     flip = true;
     % Compute ajusted heading
@@ -89,14 +106,14 @@ elseif bias > 1 % head is at the bottom (inccorrect guess)
     top_color = 'b';
     bot_color = 'r';
     
-    new_frame = flipud(head_frame); % flip frame so head is on top
+    fly_frame = flipud(head_frame); % flip frame so head is on top
     out_frame = flipud(out_frame); % flip frame so head is on top
 end
 
 % Check for ambiguous estimates % bring up debug window if heading estimate
 % is too close to call
 if debug == 2
-    if abs(1-bias) < 0.1
+    if abs(1-bias) < check
         warning('Initial heading estimate may be incorect')
         debug = true;
     else
@@ -119,7 +136,7 @@ if debug
             hold off
 
         ax(2) = subplot(1,2,2); cla ; hold on; axis image ; title('Adjusted Heading')
-            imshow(new_frame)
+            imshow(fly_frame)
             hold off
         
 	set(ax,'FontSize',10)
