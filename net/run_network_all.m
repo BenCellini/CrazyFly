@@ -3,7 +3,7 @@ clear
 close all
 clc
 
-dataDir = 'Q:\Research\fly_image\';
+dataDir = 'Q:\Research\fly_image_frye\';
 train_folder = 'train';
 test_folder  = 'test';
 log = fullfile(dataDir, 'log');
@@ -50,8 +50,9 @@ Y_test = classify(network,I_test);
 close all
 clc
 
-scale_nn = 1.1;
-NN = load('Q:\Research\fly_image\log\Normal_numEpoch_12_batchSize_50_learnRate_1e-06.mat', 'network');
+scale_nn = 1;
+NN = load('Q:\Research\fly_image_frye\log\Normal_numEpoch_12_batchSize_50_learnRate_1e-06.mat', ...
+    'network', 'ALL');
 nn_sz = NN.network.Layers(1).InputSize(1:2);
 
 yx = ceil(scale_nn*nn_sz);
@@ -59,6 +60,7 @@ yx = ceil(scale_nn*nn_sz);
 vid = squeeze(vidData);
 dim = size(vid);
 test_up = uint8(zeros(yx));
+bAngles = nan(dim(3),1);
 tic
 for n = 1:dim(3)
     frame = vid(:,:,n);
@@ -72,6 +74,7 @@ for n = 1:dim(3)
             out_frame = rot90(fly_frame,2);
             heading = heading + 180;
     end
+    bAngles(n) = heading;
     test_up(:,:,n) = imresize(out_frame, yx);
 end
 toc

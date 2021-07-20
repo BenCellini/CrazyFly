@@ -5,7 +5,7 @@ function [rc] = labeldata(root, target, fpv, vpf)
 %       root    	:   root directory to load raw images
 %       target      :   target directory to save processed images
 %       fpv         :   how many frames per video to save
-%       vps         :   
+%       vps         :   how many videos from selection
 %
 %   OUTPUT:
 %       rc          :   
@@ -21,7 +21,7 @@ function [rc] = labeldata(root, target, fpv, vpf)
 
 rng(1) % for reproducability
 
-[FILES,PATH] = uigetfile({'*.mat'},'Select head-free data', root, 'MultiSelect','on');
+[FILES,PATH] = uigetfile({'*.mat'},'Select data', root, 'MultiSelect','on');
 FILES = cellstr(FILES);
 n_file = length(FILES);
 
@@ -31,7 +31,7 @@ downdir = fullfile(target, 'Down');
 mkdir(updir)
 mkdir(downdir)
 
-% Pick videos to use from all slected files
+% Pick videos to use from all selected files
 if ~isempty(vpf)
     rand_vids = randperm(n_file);
     rand_vids = rand_vids(1:vpf);
@@ -64,13 +64,19 @@ for n = 1:n_vid
     rc{n} = zeros(n_frame,2);
     for f = 1:n_frame
         raw_frame = vid(:,:,rand_frames(f));
-        [~,~,fly_frame,~] = getflyroi(raw_frame, [221 132], 0.25, 2, 0.12);
+        %[~,~,fly_frame,~] = getflyroi(raw_frame, [221 132], 0.25, 2, 0.12);
+        [~,~,fly_frame,~] = getflyroi(raw_frame, [350 209], 0.25, 2, 0.12);
         rc{n}(f,:) = size(fly_frame); % row & column pixel size of fly frame
-        framename = [imgname '_frame_' num2str(rand_frames(f)) '.jpg'];
+        framename = [imgname '_frame_' num2str(rand_frames(f))];
+        %figure (99) ; cla ; imshow(fly_frame) ; pause
         
         flip_frame = rot90(fly_frame,2); % flip frame upside down
-        imwrite(fly_frame, fullfile(updir, framename))
-        imwrite(flip_frame, fullfile(downdir, framename))
+        
+        imwrite(fly_frame, fullfile(updir, [framename '.jpg']))
+        imwrite(fliplr(fly_frame), fullfile(updir, [framename '_LR.jpg']))
+        
+        imwrite(flip_frame, fullfile(downdir, [framename '.jpg']))
+        imwrite(fliplr(flip_frame), fullfile(downdir, [framename '_LR.jpg']))
     end
     
 end

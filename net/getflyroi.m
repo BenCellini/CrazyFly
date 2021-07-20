@@ -54,7 +54,8 @@ imgstats = regionprops(check_frame,'Centroid','Orientation','Image'); % image re
 [~,mI] = max(cellfun(@numel,{imgstats.Image}));
 check_frame = imgstats(mI).Image;
 
-imgstats = regionprops(imbinarize(head_frame),'BoundingBox','Image','Centroid'); % image reigon properties
+imgstats = regionprops(imbinarize(head_frame),'BoundingBox','Image',...
+    'Centroid'); % image reigon properties
 [~,flyIdx] = max(cellfun(@(x) numel(x), {imgstats.Image}));
 
 if isempty(yx)
@@ -106,8 +107,8 @@ elseif bias > 1 % head is at the bottom (inccorrect guess)
     top_color = 'b';
     bot_color = 'r';
     
-    fly_frame = flipud(head_frame); % flip frame so head is on top
-    out_frame = flipud(out_frame); % flip frame so head is on top
+    fly_frame = rot90(head_frame,2); % flip frame so head is on top
+    out_frame = rot90(out_frame,2); % flip frame so head is on top
 end
 
 % Check for ambiguous estimates % bring up debug window if heading estimate
@@ -154,6 +155,7 @@ end
 function flipcheck(~,~)
     close(fig)
     flip = ~flip; % invert the flip estimate
+    fly_frame = rot90(fly_frame,2);
 end
 
 function skipcheck(~,~)

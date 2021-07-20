@@ -1,5 +1,5 @@
 function [] = make_train_test(root, target, splitp)
-%% make_train_test: splits folder of labeld images into train and test data
+%% make_train_test: splits folder of labeled images into train and test data
 %
 %   INPUT:
 %       root    	:   root directory to load raw images

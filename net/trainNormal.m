@@ -25,7 +25,7 @@ nTraining = length(train.Labels);
 % lines such as the example at the bottom of the code
 % CONV -> ReLU -> POOL -> FC -> DROPOUT -> FC -> SOFTMAX 
 layers = [
-    imageInputLayer([222 133 1]); % Input to the network is a 256x256x1 sized image 
+    imageInputLayer([350 209 1]); % Input to the network is a 256x256x1 sized image 
     convolution2dLayer(5,20,'Padding',[2 2],'Stride', [2,2]);  % convolution layer with 20, 5x5 filters
     reluLayer(); % ReLU layer
     maxPooling2dLayer(2,'Stride',2); % Max pooling layer
