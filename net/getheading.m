@@ -1,4 +1,4 @@
-function [body_ang, stable_vid] = getheading(vid, scale, showplot, NN)
+function [body_ang, stable_vid, flip] = getheading(vid, scale, showplot, NN)
 %% get_heading: uses a trained neural network to find the heading of a fly in an video/image
 %
 %   INPUT:
@@ -10,6 +10,7 @@ function [body_ang, stable_vid] = getheading(vid, scale, showplot, NN)
 %   OUTPUT:
 %       body_ang    : body angle [deg]
 %       stable_vid  : stabilized video
+%       flip        : the fly heading was flipped
 %
 
 if nargin < 4
@@ -29,6 +30,8 @@ tic
 
 % Get input image size for NN
 nn_sz = NN.network.Layers(1).InputSize(1:2);
+
+if isempty(scale)
 yx = ceil(scale*nn_sz);
 
 % Format input video
@@ -59,10 +62,12 @@ for n = 1:dim(3)
     % Flip heading by 180 deg if fly is upside down
     switch Y
         case 'Up'
+            flip = false;
             out_frame = fly_frame;
         case 'Down'
             out_frame = rot90(fly_frame,2);
             heading = heading + 180;
+            flip = true;
     end
     body_ang(n) = heading;
     stable_vid(:,:,n) = imresize(out_frame, yx);
