@@ -1,4 +1,4 @@
-function [] = batch_bodytrack(root, playback, heading_debug, par)
+function [] = batch_bodytrack(root, playback, heading_debug, par, export)
 %% batch_bodytrack: runs body tracker for user selected video files
 %
 %   INPUT:
@@ -15,14 +15,17 @@ function [] = batch_bodytrack(root, playback, heading_debug, par)
 % playback = 10;
 % root = 'H:\EXPERIMENTS\MAGNO\Experiment_SOS';
 
-if nargin < 4
-    par = false; % default
-    if nargin < 3
-        heading_debug = false; % default
-        if nargin < 2
-            playback = 1; % default
-            if ~nargin
-                root = ''; % root is current folder
+if nargin < 5
+    export = false;
+    if nargin < 4
+        par = false; % default
+        if nargin < 3
+            heading_debug = false; % default
+            if nargin < 2
+                playback = 1; % default
+                if ~nargin
+                    root = ''; % root is current folder
+                end
             end
         end
     end
@@ -34,16 +37,22 @@ nfile = length(FILES);
 
 bodydir = fullfile(PATH,'tracked_body');
 mkdir(bodydir)
-for file = 1:nfile
-    disp(FILES(file))
+for n = 1:nfile
+    disp(FILES(n))
     disp('---------------------------------------')
-    load(fullfile(PATH,char(FILES(file))),'vidData','t_v')
-    
+    load(fullfile(PATH,char(FILES(n))),'vidData','t_v')
+    [~,basename] = fileparts(FILES(n));
    	close all
     
-    [bAngles,imgstats,initframe] = bodytracker(vidData, playback, heading_debug, par);
+    if export
+       vidpath = fullfile(bodydir, [char(basename) '.mp4']);
+    else
+        vidpath = [];
+    end
+    
+    [bAngles,imgstats,initframe] = bodytracker_vid(vidData, playback, heading_debug, par, vidpath);
 
-    save(fullfile(bodydir,FILES{file}),'-v7.3','bAngles','imgstats','initframe','t_v')
+    save(fullfile(bodydir,FILES{n}),'-v7.3','bAngles','imgstats','initframe','t_v')
 end
 disp('ALL DONE')
 end

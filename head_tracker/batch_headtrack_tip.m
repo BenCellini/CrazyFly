@@ -1,4 +1,4 @@
-function [] = batch_headtrack_tip(root, vidvar, npts, mask_mode, loop_mask, playback)
+function [] = batch_headtrack_tip(root, vidvar, npts, mask_mode, loop_mask, playback, export)
 %% batch_headtrack: runs head tracker for user selected video files
 %
 %   INPUT:
@@ -33,19 +33,26 @@ nfile = length(FILES);
 headdir = fullfile(PATH,'tracked_head_tip');
 mkdir(headdir)
 head_mask = mask_mode;
-for file = 1:nfile
-    disp(FILES(file))
+for n = 1:nfile
+    disp(FILES(n))
     disp('---------------------------------------')
     
     % Load data
-    Data = load(fullfile(PATH,FILES(file)));
+    Data = load(fullfile(PATH,FILES(n)));
     t_v = Data.t_v;
     vid = Data.(vidvar);
+
+    if export
+    [~,basename] = fileparts(FILES(n));
+       vidpath = fullfile(headdir, [char(basename) '.mp4']);
+    else
+        vidpath = [];
+    end
     
     % Run tracker
-    [head_data, head_mask] = track_head(vid, head_mask, npts, playback);
+    [head_data, head_mask] = track_head_vid(vid, head_mask, npts, playback, vidpath);
     
- 	save(fullfile(headdir,FILES{file}),'-v7.3','head_data', 'head_mask', 't_v')
+ 	save(fullfile(headdir,FILES{n}),'-v7.3','head_data', 'head_mask', 't_v')
     
     if loop_mask
         % use last mask for next file

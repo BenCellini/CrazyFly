@@ -120,7 +120,7 @@ end
 
 function mask = draw_mask(mask)
     % Define new mask angles
-    %mask.span(mask.span < 0) = mask.span(mask.span < 0) + 360;
+    mask.span(mask.span < 0) = mask.span(mask.span < 0) + 360;
     mask.angles = (mask.global + ( -mask.span(1):mask.span(2) ))';
     mask.left_angle = mask.angles(1);
     mask.right_angle = mask.angles(end);

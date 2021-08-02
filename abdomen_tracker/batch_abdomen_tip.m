@@ -1,4 +1,4 @@
-function [] = batch_abdomen_tip(root, vidvar, npts, mask_mode, loop_mask, playback)
+function [] = batch_abdomen_tip(root, vidvar, npts, mask_mode, loop_mask, playback, export)
 %% batch_abdomen_tip: runs abdomen tracker for user selected video files
 %
 %   INPUT:
@@ -33,19 +33,26 @@ nfile = length(FILES);
 abdomen_dir = fullfile(PATH,'tracked_abdomen_tip');
 mkdir(abdomen_dir)
 abdomen_mask = mask_mode;
-for file = 1:nfile
-    disp(FILES(file))
+for n = 1:nfile
+    disp(FILES(n))
     disp('---------------------------------------')
     
     % Load data
-    Data = load(fullfile(PATH,FILES(file)));
+    Data = load(fullfile(PATH,FILES(n)));
     t_v = Data.t_v;
     vid = Data.(vidvar);
+    
+    if export
+        [~,basename] = fileparts(FILES(n));
+       	vidpath = fullfile(abdomen_dir, [char(basename) '.mp4']);
+    else
+        vidpath = [];
+    end
 
     % Run tracker
-    [abdomen_data, abdomen_mask] = track_abdomen(vid, abdomen_mask, npts, playback);
+    [abdomen_data, abdomen_mask] = track_abdomen_vid(vid, abdomen_mask, npts, playback, vidpath);
     
- 	save(fullfile(abdomen_dir,FILES{file}),'-v7.3','abdomen_data', 'abdomen_mask', 't_v')
+ 	save(fullfile(abdomen_dir,FILES{n}),'-v7.3','abdomen_data', 'abdomen_mask', 't_v')
     
     if loop_mask
         % use last mask for next file
