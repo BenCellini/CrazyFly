@@ -1,4 +1,4 @@
-function [norm_ang,imgstats,initframe] = bodytracker(vid, playback, head_debug, par)
+function [norm_ang,imgstats,initframe] = bodytracker(vid, playback, head_debug, par, flip_lr)
 %% bodytracker: tracks the body angle of an insect in a magnetic tether
 %
 % Fits an ellipse to the 'on' reigon in each frame (insect body). Blurs the
@@ -20,12 +20,15 @@ function [norm_ang,imgstats,initframe] = bodytracker(vid, playback, head_debug, 
 %       initframe   :   initial (1st) frame image
 %
 
-if nargin < 4
-    par = false;
-    if nargin < 3
-        head_debug = false; % default
-        if nargin < 2
-            playback = 1; % default
+if nargin < 5
+    flip_lr = true;
+    if nargin < 4
+        par = false;
+        if nargin < 3
+            head_debug = false; % default
+            if nargin < 2
+                playback = 1; % default
+            end
         end
     end
 end
@@ -40,7 +43,9 @@ if ~rem(playback,1)==0
 end
 
 vid = squeeze(vid); % get rid of singleton dimension
-vid = fliplr(vid); % flip video to arena reference frame
+if flip_lr
+    vid = fliplr(vid); % flip video to arena reference frame
+end
 [yp,xp,nframe] = size(vid);  % get size & # of frames of video
 
 % Use the inital frame to find the heading
