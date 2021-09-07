@@ -188,7 +188,7 @@ if playback
         ax(2) = subplot(3,4,9:12); % angles
             addpoints(h.hAngle, n, bodypart.angle(n))
 
-        pause(0.0005) % give time for images to display
+        drawnow % give time for images to display
         
         if export
           	fig_frame = getframe(fig);

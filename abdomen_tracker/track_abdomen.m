@@ -137,7 +137,7 @@ if playback
         if (n==1) || (~mod(n,playback)) || (n==dim(3)) % at playback rate
             % Show images with tracking annotation
             ax(1) = subplot(3,4,1:8); cla % frame & tracking
-                imshow(vid(:,:,n)) ; hold on ; title(angle)
+                imshow(vid(:,:,n)) ; hold on ; %title(angle)
                 patch(mask.points(:,1), mask.points(:,2), ...
                     mask.color, 'FaceAlpha', 0.2, 'EdgeColor', mask.color, 'LineWidth', 0.5);
 
