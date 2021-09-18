@@ -62,7 +62,7 @@ trf_init = imregtform(fixed, fixed, 'rigid', optimizer, metric);
 % Register each frame with respect to the first frame
 tic
 if reg_par % use parallel processing
-    parfor n = 1:dim(3)
+    parfor (n = 1:dim(3), 8)
         fprintf([int2str(n) '\n'])
         frame = double(regvid(:,:,n));
         trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric,...

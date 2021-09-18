@@ -4,7 +4,7 @@ function [] = batch_register_par(root, vidvar, reg_par, batch_par, crop_xy)
 %   INPUT:
 %       root        :   root directory
 %       vidvar  	:   variable name of video matrix
-%       reg_par  	:   use an inner parfor loop for registration
+%       reg_par  	:   use an inner parfor loop for registration if true
 %       batch_par  	:   use an outer parfor loop for batch processing if true
 %       crop_xy  	:   crop rectangle or boolean to manually crop
 %
@@ -31,7 +31,7 @@ end
 
 tic
 if batch_par
-    parfor n = 1:n_file
+    parfor (n = 1:n_file, 4)
         register(FILES, PATH, n, regdir, vidvar, reg_par, crop_xy)
     end
 else
