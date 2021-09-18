@@ -1,8 +1,9 @@
-function [regvid, trf] = register_video_par(vid, crop_xy)
+function [regvid, trf] = register_video_par(vid, reg_par, crop_xy)
 %% register_video: register each frame of a video to the same reference
 %
 %   INPUT:
 %       vid   	:   raw video
+%       reg_par  	:   use an inner parfor loop for registration
 %       crop_xy :   crop rectangle [xoff, yoff, width, height]
 %
 %   OUTPUT:
@@ -10,7 +11,7 @@ function [regvid, trf] = register_video_par(vid, crop_xy)
 %       trf   	:   2D affine transformation for each frame
 %
 
-if nargin < 2
+if nargin < 3
     crop_xy = [];
 end
 
@@ -52,25 +53,36 @@ optimizer.MaximumIterations = 150;
 optimizer.MaximumStepLength = 0.03;
 optimizer.MinimumStepLength = 0.0002;
 
-trf     = cell(dim(3),1); % store 2D affine transformations here
-fixed   = double(squeeze(regvid(:,:,1)));
-sz      = imref2d(size(fixed));
+trf = cell(dim(3),1); % store 2D affine transformations here
+fixed = double(squeeze(regvid(:,:,1)));
+sz = imref2d(size(fixed));
 
 trf_init = imregtform(fixed, fixed, 'rigid', optimizer, metric);
 
 % Register each frame with respect to the first frame
 tic
-parfor n = 1:dim(3)
-    fprintf([int2str(n) '\n'])
-    frame = double(regvid(:,:,n));
-    trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric,...
-                        'InitialTransformation', trf_init);
-                    
-    reg = imwarp(frame, trf{n}, 'OutputView', sz);
-    regvid(:,:,n) = reg;
-    regvid(:,:,n) = imrotate(reg, 90-refangle, 'crop');
-    %fixed = (fixed*n + reg)/(n+1);
+if reg_par % use parallel processing
+    parfor n = 1:dim(3)
+        fprintf([int2str(n) '\n'])
+        frame = double(regvid(:,:,n));
+        trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric,...
+                            'InitialTransformation', trf_init);
+
+        reg = imwarp(frame, trf{n}, 'OutputView', sz);
+        regvid(:,:,n) = imrotate(reg, 90-refangle, 'crop');
+    end
+else
+    for n = 1:dim(3)
+        fprintf([int2str(n) '\n'])
+        frame = double(regvid(:,:,n));
+        trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric,...
+                            'InitialTransformation', trf_init);
+
+        reg = imwarp(frame, trf{n}, 'OutputView', sz);
+        regvid(:,:,n) = imrotate(reg, 90-refangle, 'crop');
+    end
 end
+
 regvid = fliplr(regvid);
 disp('DONE')
 toc
