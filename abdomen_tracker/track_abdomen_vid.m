@@ -120,7 +120,10 @@ for n = 1:dim(3)
     [angle,m,pts,k] = tracktip(track_frame, mask.area_points, ...
         pivot, norm, npts, 'clust', n_clust, dthresh, rmv_out);
     abdomen.angle_glob(n) = angle - 90;
-    abdomen.angle(n) = abdomen.angle_glob(n) - mask.global - 180;
+    
+    mask.global = rad2deg(wrapTo2Pi(deg2rad(mask.global)));
+    
+    abdomen.angle(n) = abdomen.angle_glob(n) + mask.global - 180;
     abdomen.points{n} = pts;
     abdomen.clust{n} = k;
     abdomen.tip(n,:) = mask.move_points.rot +  ...
