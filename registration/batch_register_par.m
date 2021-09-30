@@ -31,7 +31,7 @@ end
 
 tic
 if batch_par
-    parfor (n = 1:n_file, 4)
+    parfor (n = 1:n_file, 8)
         register(FILES, PATH, n, regdir, vidvar, reg_par, crop_xy)
     end
 else
