@@ -75,11 +75,20 @@ else
     for n = 1:dim(3)
         fprintf([int2str(n) '\n'])
         frame = double(regvid(:,:,n));
-        trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric,...
-                            'InitialTransformation', trf_init);
-
+        if n == 1
+            trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric);
+        else
+            for jj = n-1:-1:1
+                if(isRigid(trf{jj}))
+                    break
+                end
+            end
+            trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric,...
+                                'InitialTransformation', trf{jj});
+        end
         reg = imwarp(frame, trf{n}, 'OutputView', sz);
         regvid(:,:,n) = imrotate(reg, 90-refangle, 'crop');
+        fixed = (fixed*n + reg)/(n+1);
     end
 end
 
