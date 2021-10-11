@@ -19,7 +19,7 @@ vid = squeeze(vid); % in case it's 4D
 dim = size(vid); % video size
 
 % Crop video
-if isempty(crop_xy)
+if isempty(crop_xy) || ~crop_xy
     regvid = vid;
 elseif length(crop_xy) == 2
     x_range = round(crop_xy(1):dim(2)-crop_xy(1));
@@ -57,11 +57,10 @@ trf = cell(dim(3),1); % store 2D affine transformations here
 fixed = double(squeeze(regvid(:,:,1)));
 sz = imref2d(size(fixed));
 
-trf_init = imregtform(fixed, fixed, 'rigid', optimizer, metric);
-
 % Register each frame with respect to the first frame
 tic
 if reg_par % use parallel processing
+    trf_init = imregtform(fixed, fixed, 'rigid', optimizer, metric);
     parfor (n = 1:dim(3), 8)
         fprintf([int2str(n) '\n'])
         frame = double(regvid(:,:,n));
@@ -75,11 +74,16 @@ else
     for n = 1:dim(3)
         fprintf([int2str(n) '\n'])
         frame = double(regvid(:,:,n));
-        trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric,...
-                            'InitialTransformation', trf_init);
-
+        if n == 1
+            trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric);
+        else
+            trf{n} = imregtform(frame, fixed, 'rigid', optimizer, metric,...
+                                'InitialTransformation', trf{n-1});
+        end
         reg = imwarp(frame, trf{n}, 'OutputView', sz);
+        regvid(:,:,n) = reg;
         regvid(:,:,n) = imrotate(reg, 90-refangle, 'crop');
+        fixed = (fixed*n + reg)/(n+1);
     end
 end
 

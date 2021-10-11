@@ -23,7 +23,7 @@ n_file = length(FILES);
 regdir = fullfile(PATH,'registered');
 mkdir(regdir)
 
-if length(crop_xy) == 1
+if ~isempty(crop_xy) && crop_xy
     vid = load(fullfile(PATH,char(FILES(1))), vidvar);
     [~, crop_xy] = imcrop(vid.(vidvar)(:,:,:,1));
     close
@@ -31,7 +31,7 @@ end
 
 tic
 if batch_par
-    parfor (n = 1:n_file, 4)
+    parfor (n = 1:n_file, 8)
         register(FILES, PATH, n, regdir, vidvar, reg_par, crop_xy)
     end
 else
@@ -45,7 +45,7 @@ end
 
 %% Single file registration
 function [] = register(FILES, PATH, n, regdir, vidvar, reg_par, crop_xy)
-    try
+    %try
         disp(FILES(n))
         disp('---------------------------------------')
         savepath = fullfile(regdir, FILES{n});
@@ -53,9 +53,9 @@ function [] = register(FILES, PATH, n, regdir, vidvar, reg_par, crop_xy)
         vid = load(vidpath, vidvar);
         [regvid, trf] = register_video_par(vid.(vidvar), reg_par, crop_xy);
         save_vid(savepath, regvid, trf, crop_xy)
-    catch
-       warning(['Error registering ' char(FILES(n))]) 
-    end
+    %catch
+       %warning(['Error registering ' char(FILES(n))])
+    %end
 end
 
 %% Save for parfor
