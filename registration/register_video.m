@@ -73,7 +73,7 @@ for n = 1:dim(3)
                             'InitialTransformation', trf{jj});
     end
     reg = imwarp(frame, trf{n}, 'OutputView', sz);
-    regvid(:,:,n) = reg;
+    %regvid(:,:,n) = reg;
     regvid(:,:,n) = imrotate(reg, 90-refangle, 'crop');
     fixed = (fixed*n + reg)/(n+1);
 end

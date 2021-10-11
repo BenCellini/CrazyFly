@@ -39,12 +39,12 @@ for n = 1:nfile
     
     % Load data
     Data = load(fullfile(PATH,FILES(n)));
-    t_v = Data.t_v;
+    %t_v = Data.t_v;
     vid = Data.(vidvar);
 
     if export
-    [~,basename] = fileparts(FILES(n));
-       vidpath = fullfile(headdir, [char(basename) '.mp4']);
+        [~,basename] = fileparts(FILES(n));
+           vidpath = fullfile(headdir, [char(basename) '.mp4']);
     else
         vidpath = [];
     end
@@ -52,7 +52,7 @@ for n = 1:nfile
     % Run tracker
     [head_data, head_mask] = track_head_vid(vid, head_mask, npts, playback, vidpath);
     
- 	save(fullfile(headdir,FILES{n}),'-v7.3','head_data', 'head_mask', 't_v')
+ 	save(fullfile(headdir,FILES{n}),'-v7.3','head_data', 'head_mask')
     
     if loop_mask
         % use last mask for next file

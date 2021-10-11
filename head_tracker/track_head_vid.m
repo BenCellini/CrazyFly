@@ -103,10 +103,10 @@ head.points = cell(dim(3),1);
 head.tip = nan(dim(3),2);
 pivot = mask.move_points.rot;
 for n = 1:dim(3)   
-%     [angle,m,pts,k] = tracktip(vid(:,:,n), mask.area_points, ...
-%         pivot, norm, npts, 'clust');
-    [angle,m,pts,k] = tracktip(imadjust(vid(:,:,n)), mask.area_points, ...
-        pivot, norm, npts, 'dist', [20 80]);
+    [angle,m,pts,k] = tracktip(vid(:,:,n), mask.area_points, ...
+        pivot, norm, npts, 'clust', 2);
+%     [angle,m,pts,k] = tracktip(imadjust(vid(:,:,n)), mask.area_points, ...
+%         pivot, norm, npts, 'dist', [20 80]);
     head.angle_glob(n) = angle - 270;
     head.angle(n) = head.angle_glob(n) - mask.global;
     head.antenna(n,:) = m' - 270;
@@ -131,7 +131,7 @@ if playback
     fColor = 'k'; % figure and main axis color
     aColor = 'w'; % axis line color
     set(fig, 'Color', fColor, 'Units', 'inches', 'Name', 'CrazyFly')
-    fig.Position(3:4) = [9 7];
+    %fig.Position(3:4) = [9 7];
     movegui(fig, 'center')
     figure (101)
         % Raw image with tracking window

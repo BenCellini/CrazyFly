@@ -1,5 +1,5 @@
-function [abdomen, mask] = track_abdomen_vid(vid, set_mask, npts, playback, vidpath)
-% track_abdomen: tracks insect abdomen movements
+function [abdomen, mask] = track_abdomen_vid(vid, set_mask, npts, playback, vidpath, animal_class)
+%% track_abdomen: tracks insect abdomen movements
 %
 % Tracks tip of abdomen, calculates the angle with
 % respect to a specififed center point.
@@ -7,11 +7,13 @@ function [abdomen, mask] = track_abdomen_vid(vid, set_mask, npts, playback, vidp
 % Sign convention for angle outputs: [CW = + , CCW = -]
 %
 %   INPUT:
-%       vid         :   video matrix
-%       set_mask  	:   predefined mask or 2x1: [1 1] = auto place mask and let user adjust
-%       npts        :   # of points for tracker (if nan then track all points)
-%       playback    :   playback rate (show a frame in increments of "playback")
-%                       If false, then don't show anything (default = 1)
+%       vid             :   video matrix
+%       set_mask        :   predefined mask or 2x1: [1 1] = auto place mask and let user adjust
+%       npts            :   # of points for tracker (if nan then track all points)
+%       playback        :   playback rate (show a frame in increments of "playback")
+%                           If false, then don't show anything (default = 1)
+%       vidpath         :   export tracking video to this file name
+%       animal_class  	:   type of animal (1 = fly, 2 = moth)
 %
 %   OUTPUT:
 %       abdomen (structure)
@@ -25,6 +27,13 @@ function [abdomen, mask] = track_abdomen_vid(vid, set_mask, npts, playback, vidp
 %
 
 warning('off', 'MATLAB:declareGlobalBeforeUse')
+if nargin < 6
+   animal_class = 1;
+   if nargin < 5
+       vidpath = [];
+   end
+end
+
 if ~rem(playback,1)==0
     warning('Warning: "playback" roundes to nearest integer')
     playback = round(playback);
@@ -40,6 +49,10 @@ if ~isempty(vidpath)
     export = true;
 else
     export = false;
+end
+
+if isempty(animal_class)
+    animal_class = 1;
 end
 
 vid = squeeze(vid); % remove singleton dimensions
@@ -95,15 +108,24 @@ pivot = mask.move_points.rot;
 SE = strel("disk",5);
 for n = 1:dim(3)
     frame = vid(:,:,n);
-    track_frame = imerode(frame,SE);
-    %imshow(track_frame)
+    if animal_class == 1 % fly
+        track_frame = imerode(frame, SE);
+    elseif animal_class == 2 % moth
+        [track_frame] = process_frame(frame);
+        track_frame = uint8(track_frame);
+    else
+        error('this animal class does not exist yet');
+    end
+    
     [angle,m,pts,k] = tracktip(track_frame, mask.area_points, ...
         pivot, norm, npts, 'clust', n_clust, dthresh, rmv_out);
     abdomen.angle_glob(n) = angle - 90;
-    abdomen.angle(n) = abdomen.angle_glob(n) - mask.global - 180;
+    
+    mask.global = rad2deg(wrapTo2Pi(deg2rad(mask.global)));
+    
+    abdomen.angle(n) = abdomen.angle_glob(n) + mask.global - 180;
     abdomen.points{n} = pts;
     abdomen.clust{n} = k;
-
     abdomen.tip(n,:) = mask.move_points.rot +  ...
         -mask.radius.outer*[sind(abdomen.angle_glob(n)) , -cosd(abdomen.angle_glob(n))];
 end
@@ -187,4 +209,22 @@ if playback
     end
 end
 
+end
+
+%% Image preprocessing
+function [out_frame] = process_frame(in_frame)
+% process given frame
+SE_dilate = strel("disk", 5);
+SE_erode = strel("disk", 3);
+
+I = cell(1,1);
+I{1} = in_frame;
+I{end+1} = imbinarize(I{end});
+I{end+1} = imfill(I{end}, 'holes');
+I{end+1} = imdilate(I{end}, SE_dilate);
+I{end+1} = imfill(I{end}, 'holes');
+I{end+1} = imerode(I{end}, SE_erode);
+I{end+1} = bwareaopen(I{end}, 100);
+I{end+1} = medfilt2(I{end}, 5*[1 1]);
+out_frame = I{end};
 end
