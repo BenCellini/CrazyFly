@@ -122,7 +122,7 @@ neck.endI = endI;
 [pks,locs,w,p] = findpeaks(-cut_edge, 'MinPeakDistance', 10, 'MinPeakWidth', 3, ...
                                 'MinPeakProminence', 10, 'SortStr', 'descend');
 idx = (1:length(edge))';
-if isempty(locs) % didn;t find the neck on first try
+if isempty(locs) % didn't find the neck on first try
     %warning('Small peak')
     neck.flag = true;
     if ~isempty(side) % use the last neck point

@@ -102,9 +102,9 @@ head.clust = cell(dim(3),1);
 head.points = cell(dim(3),1);
 head.tip = nan(dim(3),2);
 pivot = mask.move_points.rot;
-for n = 1:dim(3)   
+for n = 1:dim(3)
     [angle,m,pts,k] = tracktip(vid(:,:,n), mask.area_points, ...
-        pivot, norm, npts, 'clust', 2);
+        pivot, norm, npts, 'clust', 2, 29);
 %     [angle,m,pts,k] = tracktip(imadjust(vid(:,:,n)), mask.area_points, ...
 %         pivot, norm, npts, 'dist', [20 80]);
     head.angle_glob(n) = angle - 270;

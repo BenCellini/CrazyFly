@@ -56,15 +56,21 @@ for n = 1:n_frame
     A{end+1} = bwareaopen(A{end},300);
     
     cent_frame = imdilate( imdilate(A{end}, se_dilate), se_dilate);
-    image_props = regionprops(cent_frame,'Centroid','MajorAxisLength');               
+    image_props = regionprops(cent_frame,'Centroid','MajorAxisLength','PixelList', 'Area');               
     if length(image_props) > 1
-        mjaxes = [image_props.MajorAxisLength];
+        mjaxes = [image_props.Area];
         [~,idx] = sort(mjaxes, 'descend');
-        idx = idx(1);
+        keepI = idx(1);
+        xy_mask = image_props(keepI).PixelList;
+        mask = false(dim(1), dim(2));
+        for p = 1:size(xy_mask,1)
+            mask(xy_mask(p,2), xy_mask(p,1)) = true;
+        end
+        A{end}(~mask) = false;
     else
-        idx = 1;
+        keepI = 1;
     end                  
-    cut_props(n) = image_props(idx);
+    cut_props(n) = image_props(keepI);
 
     % Get outline
     A{end+1} = imerode(A{end}, se_erode);

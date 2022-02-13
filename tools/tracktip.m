@@ -99,10 +99,6 @@ else
     y = y(rix);
     pts = [x, y];
     
-%     cla ; imshow(img) ; hold on
-%     plot(x,y,'m.')
-%     pause(0.0001)
-    
     % Get angle from points
     switch mode
         case 'dist' % distribution tails
@@ -124,7 +120,7 @@ else
                 spread = nan(arg,1);
                 k_n = nan(arg,1);
                 for n = 1:arg % STD & median of each cluster
-                    spread(n) = std(theta(k==n));
+                    spread(n) = range(theta(k==n));
                     m(n) = median(theta(k==n));
                     k_n(n) = sum(k==n);
                 end
@@ -133,17 +129,22 @@ else
                 % then remove extra clutsers
                 spread_check = spread > dthresh; % test clusters for variance
                 new_flag = false;
+                new_rho = rho;
+                new_theta = theta;
                 p = 1;
                 while any(spread_check)
-                    warning('Likely more clusters than set')
+                    %warning('Likely more clusters than set')
                    	new_flag = true;
                     n_clust = arg + p; % add cluster
 
                     % Cluster data into specified # of clusters + p
+                    P = [new_rho new_theta];
+                    Y = pdist(P, 'euclidean');
+                    Z = linkage(Y, 'average');
                     k = cluster(Z, 'maxclust', n_clust);
                     m = nan(n_clust,1);
                     for n = 1:n_clust % STD & median of each cluster
-                        spread(n) = std(theta(k==n));
+                        spread(n) = range(theta(k==n));
                         m(n) = median(theta(k==n));
                     end
                     spread_check = spread > dthresh;
@@ -162,7 +163,7 @@ else
                     end
 
                     p = p + 1;
-                    if p > 5 % don't do this forever
+                    if p > 2 % don't do this forever
                        warning('Clusters not found, breaking loop')
                        break
                     end
@@ -185,16 +186,9 @@ else
                 % Mean angle
                 angle = mean(m); % output angle is mean of each groups median
                 
-                if new_flag
-                   %angle = nan; 
-                end
-                
-%                 if (angle-270) > 12
-%                     imshow(bw); hold on
-%                     plot(x,y,'m.')
-%                     disp(angle)
+%                 if new_flag
+%                    angle = nan; 
 %                 end
-
             end
     end
 end
