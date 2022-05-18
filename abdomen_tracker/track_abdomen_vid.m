@@ -110,6 +110,7 @@ for n = 1:dim(3)
     frame = vid(:,:,n);
     if animal_class == 1 % fly
         track_frame = imerode(frame, SE);
+        %track_frame = frame;
     elseif animal_class == 2 % moth
         [track_frame] = process_frame(frame);
         track_frame = uint8(track_frame);
