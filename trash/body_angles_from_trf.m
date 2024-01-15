@@ -1,4 +1,4 @@
-function [ang] = reg2ang(trf)
+function [ang] = body_angles_from_trf(trf)
 %% reg2ang: computes angle from registration affine 2D object
 %
 %   INPUT:
