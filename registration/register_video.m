@@ -10,12 +10,12 @@ function [trf, body_angles_from_trf] = register_video(vid, save_vid_path, mat_va
 %                         only required if inputing vid_path to .mat file
 %       flip_vid        : if true, then flip the registered video from left to right 
 %                         (usually only set to true if a bottom view video)
-%       debug           : show debug figure for setting initial heading
+%       debug_heading   : show debug figure for setting initial heading
 %                         0=never, 1=always, 2=if close call (default = 0)
 %
 %   OUTPUT:
 %       trf   	              : 2D affine transformation for each frame
-%       body_angles_from_trf  : body angles calcualted from registration transforma                         tions in 'trf'
+%       body_angles_from_trf  : body angles calculated from registration transformations in 'trf'
 %
 
 % Parse inputs
