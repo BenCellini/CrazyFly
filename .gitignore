@@ -1,0 +1,5 @@
+# Windows default autosave extension
+*.asv
+
+# Pycharm .idea project folder
+.idea
