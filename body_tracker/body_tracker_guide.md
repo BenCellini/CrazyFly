@@ -5,9 +5,9 @@ The body tracker is mainly designed for videos of magnetically bettered flies. T
 ## How it works
 
 The [body_tracker.m](body_tracker.m) function will take in a video (either as a matrix or a path to a video file) and track the body angle in all frames. First, each frame is pre-processed to get rid of noise and blurred to make the fly appear like one big blob (removes affects from legs, head, etc.). The body angle is then calculated by fitting an ellipse to the white pixels in each frame:
-![body_tracker.png](..%2Fimg%2Fbody_tracker.png)
+![body_tracker.png](../img/body_tracker.png)
 
-The initial heading of the fly is found using the [find_heading.m](..%2Ftools%2Ffind_heading.m), which makes sure that we track the fly's head instead of the abdomen. 
+The initial heading of the fly is found using the [find_heading.m](../tools/find_heading.m), which makes sure that we track the fly's head instead of the abdomen. 
 
 ## Running
 The main function to register videos is [body_tracker.m](body_tracker.m):
@@ -39,12 +39,12 @@ The main function to register videos is [body_tracker.m](body_tracker.m):
 
 
 * `playback`: sets how to view the tracking progress. 
-  * `0`: just show the tracking on the first frame to make sure heading was detetced correctly
+  * `0`: just show the tracking on the first frame to make sure heading was detected correctly
   * `1`: playback every frame while tracking
   * If `playback` is set to any other integer `n` then display every `n` frames
 
 
-* `vidpath`: path to output the tracking video. If empty `vidpath = []`, then export to default directory. Set to `false` to skip export. Note that `playback` is ideally set to `1` if exporting a video to get smooth looking vidoes.
+* `vidpath`: path to output the tracking video. If empty `vidpath = []`, then export to default directory. Set to `false` to skip export. Note that `playback` is ideally set to `1` if exporting a video to get smooth looking videos.
 
 ### Output guide
 
@@ -53,11 +53,14 @@ The main function to register videos is [body_tracker.m](body_tracker.m):
    * `imgstats`: stats from the ellipse fit such as the centroid, area, length, etc.
    * `initframe`: image of the first tracked frame. Useful for checking if the heading was found correctly.
 
+Example output file: [example_body_free_tracked_body_data.mat](../example_videos/tracked_body/example_body_free_tracked_body_data.mat)
+
+If `vidpath` is set, then the tracking video is also saved. Example tracking video:  Example tracking video:  [example_body_free_tracked_body.mp4](../example_videos/tracked_body/example_body_free_tracked_body.mp4)
 
 ### Example usage
 
 #### From video file, debugging the initial heading, playing back every frame, & saving the tracking video in the default location
-    vid = '..\example_vidoes\example_body_free.mp4';
+    vid = '..\example_videos\example_body_free.mp4';
     save_path = [];
     mat_var_name = [];
     debug_heading = 1;

@@ -1,4 +1,4 @@
-function [angle,m,pts,k] = tracktip(img, mask, rot, norm, npts, mode, arg, dthresh, rmv_out)
+function [angle, m, pts, k] = tracktip(img, mask, rot, norm, npts, mode, arg, dthresh, rmv_out)
 %% get_vid_props: get properties of video
 %
 %   INPUT:

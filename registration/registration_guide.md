@@ -8,7 +8,7 @@ The [register_video.m](register_video.m) function will take in a video (either a
 
 The [find_heading.m](../tools/find_heading.m) function will then find the heading of the fly in the first frame, and rotate every registered frame such that the fly body is aligned as close as possible to the vertical axis (fly head pointing up).
 
-The example video to register is [example_body_free.mp4](..%2Fexample_vidoes%2Fexample_body_free.mp4), where the fly is rotating about the yaw axis and the frames look something like this:
+The example video to register is [example_body_free.mp4](../example_videos/example_body_free.mp4), where the fly is rotating about the yaw axis and the frames look something like this:
 
 <p float="middle">
   <img src="../img/body_free.png" width="300" />
@@ -20,7 +20,7 @@ After [register_video.m](register_video.m) has been applied, the new registered 
   <img src="../img/body_free_registered.png" width="300" />
 </p>
 
-A registered video of [example_body_free.mp4](..%2Fexample_vidoes%2Fexample_body_free.mp4) is provided [example_body_free_registered.mp4](..%2Fexample_vidoes%2Fregistered%2Fexample_body_free_registered.mp4) to illustrate what a successful video registration should look like.
+A registered video of [example_body_free.mp4](../example_videos/example_body_free.mp4) is provided [example_body_free_registered.mp4](../example_videos/registered/example_body_free_registered.mp4) to illustrate what a successful video registration should look like.
 
 
 ## Running
@@ -61,16 +61,20 @@ The main function to register videos is [register_video.m](register_video.m):
    * `trf`: 2D affine transformation for each frame
    * `body_angles_from_trf`: body angles calculated from registration transformations in `trf`
 
+Example registered video file: [example_body_free_registered.mp4](../example_videos/registered/example_body_free_registered.mp4)
+
+Example `.mat` file: [example_body_free_registered_data.mat](../example_videos/registered/example_body_free_registered_data.mat)
+
 ### Example usage
 
 #### From video file
-    vid = '..\example_vidoes\example_body_free.mp4';
+    vid = '..\example_videos\example_body_free.mp4';
     save_vid_path = [];
 
     [trf, body_angles_from_trf] = register_video(vid, save_vid_path);
 
 #### From video file with extra inputs
-    vid = '..\example_vidoes\example_body_free.mp4';
+    vid = '..\example_videos\example_body_free.mp4';
     save_vid_path = [];
     mat_var_name = [];
     debug_heading = 1;
@@ -79,17 +83,17 @@ The main function to register videos is [register_video.m](register_video.m):
     [trf, body_angles_from_trf] = register_video(vid, save_vid_path, mat_var_name, debug_heading, flip_vid);
 
 #### From .mat file
-    vid = '..\example_vidoes\example_body_free.mat';
+    vid = '..\example_videos\example_body_free.mat';
     save_vid_path = [];
     mat_var_name = 'vid';
 
     [trf, body_angles_from_trf] = register_video(vid, save_vid_path, mat_var_name);
 
 #### From matrix in MATLAB variable
-    load('..\example_vidoes\example_body_free.mat');
-    save_vid_path = '..\example_vidoes\registered\example_body_free_registered.mp4';
+    load('..\example_videos\example_body_free.mat');
+    save_vid_path = '..\example_videos\registered\example_body_free_registered.mp4';
 
     [trf, body_angles_from_trf] = register_video(vid, save_vid_path);
 
 ## Notes
-* If your videos are stored in `.mat` files and are too big to load into ram, convert them to `.mp4` files first. [mat2vid.m](..%2Futil%2Fmat2vid.m) is a useful function for this purpose.
+* If your videos are stored in `.mat` files and are too big to load into ram, convert them to `.mp4` files first. [mat2vid.m](../util/mat2vid.m) is a useful function for this purpose.

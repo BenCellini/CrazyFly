@@ -1,4 +1,4 @@
-function [VID,cent] = get_cut_vid(vid, percent_frame, bb, flex, cut)
+function [VID, cent] = get_cut_vid(vid, percent_frame, bb, flex, cut)
 % get_head_vid: 
 %
 %   INPUT:

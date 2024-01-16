@@ -146,19 +146,21 @@ for n = 1:viddata.n_frame
     
     % Get frame
     if viddata.matflag % from matrix
-        frame = viddata.vid(:, :, n);
+        raw_frame = viddata.vid(:, :, n);
     else % from video reader 
-        frame = im2gray(read(viddata.Vread, n));
-    end
-
-    % Invert if backinglighting was detected
-    if viddata.invertflag
-        frame = imcomplement(frame);
+        raw_frame = im2gray(read(viddata.Vread, n));
     end
 
     % Flip video left to right if specified
     if flip_vid
-        frame = fliplr(frame);
+        raw_frame = fliplr(raw_frame);
+    end
+
+    % Invert if backinglighting was detected
+    if viddata.invertflag
+        frame = imcomplement(raw_frame);
+    else
+        frame = raw_frame;
     end
 
     % Preprocess
@@ -215,7 +217,7 @@ for n = 1:viddata.n_frame
             
             % Show images with tracking annotation
             set(fig, 'CurrentAxes', ax(1)) ; cla
-                imshow(frame) % frame
+                imshow(raw_frame) % frame
                 %set(H, 'CData', frame);
     
                 h.heading = semi_ellipse(centroid, L, 0.5, 0.90, 180 - norm_ang(n), 'r');

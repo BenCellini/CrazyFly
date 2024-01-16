@@ -13,7 +13,7 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     mask.sym = true;
     
     % Main window
-    mask.fig.main = figure('Name', 'CrazyFly', 'Color', [0.3 0.3 0.3]);
+    mask.fig.main = figure('Name', 'CrazyFly', 'Color', [1, 1, 1]);
     imshow(frame)
     
     % Get frame to set mask
@@ -39,9 +39,9 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     mask.angles = (mask.left_angle:1:mask.right_angle)'; % angles in between edges of mask
     
     % Define initial reference angle & radius
-	mask.init.radius = mean([mask.radius.inner, mask.radius.outer]); % radius of initial refercne angle
-    mask.init.angle = 0; % initial reference angle [°]
-    mask.init.color = [1 0 0];
+	% mask.init.radius = mean([mask.radius.inner, mask.radius.outer]); % radius of initial refercne angle
+    % mask.init.angle = 0; % initial reference angle [°]
+    % mask.init.color = [1 0 0];
     
     % Define arc coordinates
     inner_cent_pos = mask.move.rot.Position + ...
@@ -56,9 +56,9 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
         2*mask.radius.axis*[sind(mask.global) , -cosd(mask.global)];
     
     % Point to define initial reference angle
-	init_pos = mask.move.rot.Position + ...
-        mask.init.radius*[sind(mask.global + mask.init.angle) , ...
-        -cosd(mask.global + mask.init.angle)];
+	%init_pos = mask.move.rot.Position + ...
+        %mask.init.radius*[sind(mask.global + mask.init.angle) , ...
+        %-cosd(mask.global + mask.init.angle)];
     
     % Make the movable mask ROI points
     mask.move.inner_C = drawpoint('Position', inner_cent_pos, ...
@@ -71,8 +71,8 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
         'Color', mask.color);
     mask.move.axis = drawpoint('Position', axis_pos, ...
         'Color', mask.color);
-    mask.move.init = drawpoint('Position', init_pos, ...
-        'Color', mask.init.color);
+    %mask.move.init = drawpoint('Position', init_pos, ...
+        %'Color', mask.init.color);
     
     % Listeners to move mask
     addlistener(mask.move.rot, 'MovingROI', @rot_point);
@@ -87,8 +87,13 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     addlistener(mask.move.outer_R, 'ROIMoved', @outer_right);
     addlistener(mask.move.axis, 'MovingROI', @axis);
     addlistener(mask.move.axis, 'ROIMoved', @axis);
-    addlistener(mask.move.init, 'MovingROI', @init);
-    addlistener(mask.move.init, 'ROIMoved', @init);
+    %addlistener(mask.move.init, 'MovingROI', @init);
+    %addlistener(mask.move.init, 'ROIMoved', @init);
+
+    % Set marker size
+    set([mask.move.rot, mask.move.axis, ...
+         mask.move.inner_C, mask.move.outer_C, ...
+         mask.move.outer_L, mask.move.outer_R],  'MarkerSize', 8)
     
     % UI Controls
     fig_w = mask.fig.main.Position(3);
@@ -101,9 +106,9 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
                     'position',[10,0.15*fig_h,50,15],'string','0');
     set(H.global, 'callback', @(src, event) global_call(src, event, H), 'BackgroundColor', [0 1 0]);
     
-    H.init = uicontrol('style','edit','units','pixels', ...
-                    'position',[10,0.1*fig_h,50,15],'string','0');
-    set(H.init, 'callback', @(src, event) init_call(src, event, H), 'BackgroundColor', mask.init.color);
+    %H.init = uicontrol('style','edit','units','pixels', ...
+                    %'position',[10,0.1*fig_h,50,15],'string','0');
+    %set(H.init, 'callback', @(src, event) init_call(src, event, H), 'BackgroundColor', mask.init.color);
     
     H.done = uicontrol('style','pushbutton','units','pixels', 'Value', false, ...
                     'position',[10,0.01*fig_h,50,15],'string','Done');
@@ -113,7 +118,7 @@ function mask = make_mask(rot, global_ang, R, span, frame, mask_color)
     mask.patch = [];
     mask.axis = [];
     mask.axis_reverse = [];
-    mask.init_line = [];
+    %mask.init_line = [];
     mask = draw_mask(mask);
     mask = get_ROI(mask);
 end
@@ -142,12 +147,14 @@ function mask = draw_mask(mask)
         mask.radius.outer*[sind(mask.right_angle) , -cosd(mask.right_angle)];
     mask.move.axis.Position = mask.move.rot.Position - ...
         mask.radius.axis*[sind(mask.global) , -cosd(mask.global)];
-    mask.move.init.Position = mask.move.rot.Position + ...
-        mask.init.radius*[sind(mask.global + mask.init.angle) , -cosd(mask.global + mask.init.angle)];
+    %mask.move.init.Position = mask.move.rot.Position + ...
+        %mask.init.radius*[sind(mask.global + mask.init.angle) , -cosd(mask.global + mask.init.angle)];
     
     % Annotate the mask ROI reigon
     delete(mask.patch)
-    delete([mask.axis mask.axis_reverse mask.init_line])
+    %delete([mask.axis mask.axis_reverse mask.init_line])
+    delete([mask.axis mask.axis_reverse])
+
     mask.patch = patch(mask.points(:,1), mask.points(:,2), ...
         mask.color, 'FaceAlpha', 0.2, 'EdgeColor', mask.color, 'LineWidth', 1);
     mask.axis = plot([mask.move.rot.Position(1) mask.move.outer_C.Position(1)], ...
@@ -156,9 +163,9 @@ function mask = draw_mask(mask)
     mask.axis_reverse = plot([mask.move.axis.Position(1) mask.move.rot.Position(1)], ...
         [mask.move.axis.Position(2) mask.move.rot.Position(2)], ...
          '--', 'Color', mask.color, 'LineWidth', 0.25);
-    mask.init_line = plot([mask.move.rot.Position(1) mask.move.init.Position(1)], ...
-        [mask.move.rot.Position(2) mask.move.init.Position(2)], ...
-         '-', 'Color', mask.init.color, 'LineWidth', 0.25);
+    %mask.init_line = plot([mask.move.rot.Position(1) mask.move.init.Position(1)], ...
+        %[mask.move.rot.Position(2) mask.move.init.Position(2)], ...
+         %'-', 'Color', mask.init.color, 'LineWidth', 0.25);
      
     % Store the points
     mask.move_points = structfun(@(x) x.Position, mask.move, 'UniformOutput', false);
@@ -166,7 +173,7 @@ function mask = draw_mask(mask)
 	% Update global heading display
 	global H
 	H.global.String = string(mask.global);
-    H.init.String = string(mask.init.angle);
+    %H.init.String = string(mask.init.angle);
 end
 
 function mask = get_ROI(mask, frame, showplot)
