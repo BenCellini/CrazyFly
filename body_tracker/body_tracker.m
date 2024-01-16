@@ -1,44 +1,79 @@
-function [norm_ang,imgstats,initframe] = body_tracker(vid, playback, head_debug, par, vidpath)
+function [angle, imgstats, initframe] = body_tracker(vid, save_path, mat_var_name, debug_heading, flip_vid, playback, vidpath)
 %% body_tracker: tracks the body angle of an insect in a magnetic tether
 %
-% Fits an ellipse to the 'on' reigon in each frame (insect body). Blurs the
-% image to get rid of head movements and wraps the angle. Can debug by
-% displaying a tracking animation.
+%   Fits an ellipse to the 'on' reigon in each frame (insect body). Blurs the
+%   image to get rid of head movements and wraps the angle. Can debug by
+%   displaying a tracking animation.
 %
 % Sign convention for angle outputs: [CW = + , CCW = -]
+% 0 deg is when the fly hed is pointing upward in the frame
 %
 %   INPUT:
-%       vid         :   input video matrix
-%       playback   	:   playback rate (show a frame in increments of "playback").
-%                       If false, then only show the 1st frame. (default = 1)
-%       head_debug  :   show debug figure 0=never, 1=always, 2=if close call (default = 2)
-%       par         :   if true, use parallel processing
+%       vid             : raw grayscale video data in matrix form
+%                         or a path to a video file (.mp4 or .avi)
+%       save_path       : path to save calculatd body angles.
+%                         if empty, default is 'tracked_body' folder in 'vid' directory
+%       mat_var_name    : name of the matlab variable containing the video data
+%                         only required if inputing vid_path to .mat file
+%       debug_heading   : show debug figure for setting initial heading
+%                         0=never, 1=always, 2=if close call (default = 0)
+%       flip_vid        : if true, then flip the registered video from left to right
+%                         (usually only set to true if a bottom view video)
+%       playback   	    : playback rate (show a frame in increments of "playback").
+%                         if false, then only show the 1st frame. (default = 1)
+%       vidpath         : path of output video. No ouput if false
 %                           
 %   OUTPUT:
-%       norm_ang 	:   normalized & unwrapped body angle [°]
-%       imgstats 	:   structure containing some basic image statistics (orientation, centroid, etc.)
-%       initframe   :   initial (1st) frame image
+%       angle 	        : normalized & unwrapped body angle [deg]
+%       imgstats 	    : structure containing some basic image statistics (orientation, centroid, etc.)
+%       initframe       : initial (1st) frame image
 %
 
-if nargin < 5
+% Parse inputs
+if nargin < 7
     vidpath = [];
-    if nargin < 4
-        par = false;
-        if nargin < 3
-            head_debug = false; % default
-            if nargin < 2
-                playback = 1; % default
+    if nargin < 6
+        playback = 1;
+        if nargin < 5
+            flip_vid = false;
+            if nargin < 4
+                debug_heading = 0;
+                if nargin < 3
+                    mat_var_name = 'vid';
+                    if nargin < 2
+                        save_path = [];
+                    end
+                end
             end
         end
     end
 end
 
-if ~isempty(vidpath)
-    export = true;
-else
-    export = false;
+if isempty(mat_var_name)
+    mat_var_name = 'vid';
 end
 
+% Parse video input
+[viddata] = get_vid_data(vid, save_path, mat_var_name, 'tracked_body');
+
+% Flip 1st frame left to right if specified
+if flip_vid
+    viddata.first_frame = fliplr(viddata.first_frame);
+end
+
+% Set output video path
+if ~isempty(vidpath) % export video to default path
+    if ~vidpath % don't export
+        export = false;
+    else
+        export = true;
+    end
+else
+    export = true;
+    vidpath = viddata.save_vid_path;
+end
+
+% Parse playback input
 if isempty(playback)
     playback = 1; % default
 end
@@ -48,48 +83,20 @@ if ~rem(playback,1)==0
     playback = round(playback);
 end
 
-vid = squeeze(vid); % get rid of singleton dimension
-vid = fliplr(vid); % flip video to arena reference frame
-[yp,xp,nframe] = size(vid);  % get size & # of frames of video
-
 % Use the inital frame to find the heading
-[~,flip] = findheading(vid(:,:,1), head_debug);
+[~, flip] = find_heading(viddata.first_frame, debug_heading);
 disp('Heading found.')
-
-% Preprocess raw video
-disp('Video preprocessing...')
-bnvid = false(yp,xp,nframe); % stores the processed video
-SE_erode = strel('disk',8,4); % erosion mask
-SE_dilate = strel('disk',12,4); % dilation mask
-tic
-if par
-    parfor n = 1:nframe
-        % disp(idx)
-        frame = vid(:,:,n); % get raw frame
-        bnframe = imbinarize(frame); % binarize
-        bnframe = imerode(bnframe, SE_erode); % erode
-        bnframe = imdilate(bnframe, SE_dilate); % dilate
-        bnvid(:,:,n) = logical(bnframe); % store bianary frame
-    end
-else
-    for n = 1:nframe
-        % disp(idx)
-        frame = vid(:,:,n); % get raw frame
-        bnframe = imbinarize(frame); % binarize
-        bnframe = imerode(bnframe, SE_erode); % erode
-        bnframe = imdilate(bnframe, SE_dilate); % dilate
-        bnvid(:,:,n) = logical(bnframe); % store bianary frame
-    end
-end
-toc
-
-pause(1)
+pause(0.5)
 close all
 
+% Video preprocessing morphological structuring elements
+SE_erode = strel('disk', 8, 4); % erosion mask
+SE_dilate = strel('disk', 12, 4); % dilation mask
+
 % Set some parameters
-offset  = 90;  % shift the reference frame so 0° is the top vertical axis in video [°]
-dthresh = 160; % threshold for detecting >180° flips in ellipse orientation, or angles > 360°
-shift   = 0;   % shift to keep angle wrapped [°] (dynamic)
+offset = 90;  % shift the reference frame so 0 deg is the top vertical axis in video [deg]
+dthresh = 160; % threshold for detecting >180 deg flips in ellipse orientation, or angles > 360 deg
+shift  = 0; % shift to keep angle wrapped [deg] (dynamic)
 
 % Create display
 fig(1) = figure (100); clf
@@ -101,76 +108,87 @@ fig(1).Position(3:4) = [9 7];
 % movegui(fig,'center')
 figure (100)
     % Raw image window
-    ax(1) = subplot(3,2,[1,3]); hold on ; cla ; axis image
-    H(1) = imshow(vid(:,:,1));
+    ax(1) = subplot(3, 2, [1,3]); hold on ; cla ; axis image
+    H(1) = imshow(viddata.first_frame);
 
     % Processed video window
-    ax(2) = subplot(3,2,[2,4]); hold on ; cla ; axis image
-    H(2) = imshow(bnvid(:,:,1));
+    ax(2) = subplot(3, 2, [2,4]); hold on ; cla ; axis image
+    H(2) = imshow(viddata.first_frame);
 
     % Body angle window
-    ax(3) = subplot(3,2,5:6); hold on ; cla ; xlim([0 nframe])
+    ax(3) = subplot(3,2,5:6); hold on ; cla ; xlim([0 viddata.n_frame])
         xlabel('Frame')
-        ylabel('Angle (°)')
-        h.raw_angle  = animatedline(ax(3),'Color','b','LineWidth',1); % debugging
-        h.norm_angle = animatedline(ax(3),'Color','r','LineWidth',1);
+        ylabel('Angle (\circ)', 'Interpreter', 'tex')
+        h.raw_angle  = animatedline(ax(3),'Color', 'b', 'LineWidth',1); % debugging
+        h.norm_angle = animatedline(ax(3),'Color', 'r', 'LineWidth',1);
 
 set(ax, 'Color', fColor, 'LineWidth', 1.5, 'FontSize', 12, 'FontWeight', 'bold', ...
     'YColor', aColor, 'XColor',aColor)
 
 % Preallocate vectors to store tracked angles
-raw_ang  = nan(nframe,1); % stores raw angles calulated by ellipse fit [°]
-norm_ang = nan(nframe,1); % stores normalized/unwrapped angles [°]
+raw_ang = nan(viddata.n_frame,1); % stores raw angles calulated by ellipse fit [deg]
+norm_ang = nan(viddata.n_frame,1); % stores normalized/unwrapped angles [deg]
 
 if export
     VID = VideoWriter(vidpath,'MPEG-4');
-    VID.FrameRate = 100;
+    VID.Quality = 100;
+    VID.FrameRate = 60;
     open(VID)
 end
 
 tic
 disp('Tracking...')
-% h.heading = [];
-% h.rect = [];
-% h.ellps = [];
-for n = 1:nframe
+for n = 1:viddata.n_frame
     % Display frame count every every 100 frames
-    if (n==1) || ~mod(n,100) || (n==nframe)
+    if (n==1) || ~mod(n,100) || (n==viddata.n_frame)
         fprintf('%i\n',n)
     end
     
-    % Get images
-    frame = vid(:,:,n); % raw frame
-    bnframe = bnvid(:,:,n); % processed frame
+    % Get frame
+    if viddata.matflag % from matrix
+        frame = viddata.vid(:, :, n);
+    else % from video reader 
+        frame = im2gray(read(viddata.Vread, n));
+    end
+
+    % Flip video left to right if specified
+    if flip_vid
+        frame = fliplr(frame);
+    end
+
+    % Preprocess
+    bnframe = imbinarize(frame); % binarize
+    bnframe = imerode(bnframe, SE_erode); % erode
+    bnframe = imdilate(bnframe, SE_dilate); % dilate
+    bnframe = logical(bnframe); % store bianary frame
     
-  	% Calculate angle
+  	% Fit an ellipse to the frame
     tempstats = regionprops(bnframe,'Centroid','Area','BoundingBox','Orientation', ...
         'MajorAxisLength','MinorAxisLength'); % image reigon properties
     
-    % Make sure we only the largest object (body)
+    % Make sure we only use the largest object in the frame
     [~,sort_area] = sort([tempstats.Area],'descend');
     bodyI = sort_area(1);
-    
     imgstats(n) = tempstats(bodyI); % get stats
     
+    % Get body centroid & angle
     centroid = imgstats(n).Centroid; % centroid of image
     L = imgstats(n).MajorAxisLength / 2; % long axis of image
-    
-    raw_ang(n)  = (imgstats(n).Orientation - offset); % raw angle [°]
-    norm_ang(n) = -(imgstats(n).Orientation - offset + shift); % normalized, unwrapped angle [°]
+    raw_ang(n) = (imgstats(n).Orientation - offset); % raw angle [deg]
+    norm_ang(n) = -(imgstats(n).Orientation - offset + shift); % normalized, unwrapped angle [deg]
  	
-    % Check for changes in angle > 180°. Correct for the ellipse fit and unwrap angles.
+    % Check for changes in angle > 180 deg. Correct for the ellipse fit and unwrap angles.
     if n > 1
-        dbody = norm_ang(n) - norm_ang(n-1); % change in body angle between frames [°]
-        magd = abs(dbody); % magnitude of change [°]
+        dbody = norm_ang(n) - norm_ang(n-1); % change in body angle between frames [deg]
+        magd = abs(dbody); % magnitude of change [deg]
         signd = sign(dbody); % direction of change
         if magd > dthresh % 180 or more flip
-            flipn = round(magd/180); % how many 180° shifts we need
-         	shift = -signd*flipn*180; % shift amount [°]
-            norm_ang(n) = norm_ang(n) + shift; % normalized, unwrapped angle [°]
+            flipn = round(magd/180); % how many 180 deg shifts we need
+         	shift = -signd*flipn*180; % shift amount [deg]
+            norm_ang(n) = norm_ang(n) + shift; % normalized, unwrapped angle [deg]
         end
-    elseif n==1
-        % Flip heading by 180° if the heading is in the wrong direction
+    elseif n == 1
+        % Flip heading by 180 deg if the heading is in the wrong direction
         if flip
             norm_ang(n) = norm_ang(n) + 180;
         end
@@ -181,10 +199,9 @@ for n = 1:nframe
         end
     end
 
-    if playback || n==1
-        %set(fig, 'Visible', 'on')
+    if playback || (n == 1)
         % Display images
-        if (n==1) || (~mod(n,playback)) || (n==nframe) % display at playback rate
+        if (n==1) || (~mod(n,playback)) || (n==viddata.n_frame) % display at playback rate
             % Get approximate location of head
             head = centroid + L*[sind(norm_ang(n)), -cosd(norm_ang(n))];
             heading = [centroid ; head];
@@ -227,7 +244,6 @@ for n = 1:nframe
         
         % Display angle
         set(fig, 'CurrentAxes', ax(3))
-            % addpoints(h.raw_angle, idx, raw_angle(idx)) % debugging
             addpoints(h.norm_angle, n, norm_ang(n))
             
         if n == 1 % get 1st frame
@@ -246,5 +262,10 @@ end
 if export
    close(VID) 
 end
+
+% Save image data & body angles
+angle = norm_ang;
+save(viddata.save_data_path, 'angle', 'imgstats', 'initframe', '-v7.3')
+
 toc
 end

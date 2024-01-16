@@ -8,10 +8,10 @@ function [trf, body_angles_from_trf] = register_video(vid, save_vid_path, mat_va
 %                          default is 'registered' folder in 'vid' directory
 %       mat_var_name    : name of the matlab variable containing the video data
 %                         only required if inputing vid_path to .mat file
-%       flip_vid        : if true, then flip the registered video from left to right 
-%                         (usually only set to true if a bottom view video)
 %       debug_heading   : show debug figure for setting initial heading
 %                         0=never, 1=always, 2=if close call (default = 0)
+%       flip_vid        : if true, then flip the registered video from left to right
+%                         (usually only set to true if a bottom view video)
 %
 %   OUTPUT:
 %       trf   	              : 2D affine transformation for each frame
@@ -30,6 +30,10 @@ if nargin < 5
             end
         end
     end
+end
+
+if isempty(mat_var_name)
+    mat_var_name = 'vid';
 end
 
 % Parse video input
