@@ -78,9 +78,19 @@ if ~exist(vid_dir, 'dir') && ~isempty(vid_dir)
    mkdir(vid_dir)
 end
 
+% Check lighting
+pixel_mean = mean(first_frame, 'all');
+if pixel_mean > 100 % back lighting detected
+    first_frame = imcomplement(first_frame);
+    invertflag = true;
+else
+    invertflag = false;
+end
+
 % Store data
 viddata.matflag = matflag;
 viddata.first_frame = first_frame;
+viddata.invertflag = invertflag;
 viddata.n_frame = n_frame;
 
 if matflag

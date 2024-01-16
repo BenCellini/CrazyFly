@@ -151,6 +151,11 @@ for n = 1:viddata.n_frame
         frame = im2gray(read(viddata.Vread, n));
     end
 
+    % Invert if backinglighting was detected
+    if viddata.invertflag
+        frame = imcomplement(frame);
+    end
+
     % Flip video left to right if specified
     if flip_vid
         frame = fliplr(frame);
@@ -194,8 +199,8 @@ for n = 1:viddata.n_frame
         end
         
        	% Make start angle positive
-        if norm_ang(n) < 0
-            norm_ang(n) = norm_ang(n) + 360;
+        if norm_ang(n) > 180
+            norm_ang(n) = norm_ang(n) - 360;
         end
     end
 

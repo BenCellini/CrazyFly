@@ -79,6 +79,11 @@ for n = 1:viddata.n_frame
         frame = im2gray(read(viddata.Vread, n));
     end
 
+    % Invert if backinglighting was detected
+    if viddata.invertflag
+        frame = imcomplement(frame);
+    end
+
     % Convert frame to double
     frame = double(frame);
 
@@ -114,7 +119,7 @@ end
 % Calculate body angles from transformation data
 T11 = cellfun(@(x) x.T(1,1), trf);
 T12 = cellfun(@(x) x.T(1,2), trf);
-body_angles_from_trf = rad2deg(unwrap(atan2(T12, T11))) + (90 - refangle);
+body_angles_from_trf = -rad2deg(unwrap(atan2(T12, T11))) + (90 - refangle);
 
 % Save transformation data & body angles
 save(viddata.save_data_path, 'trf', 'body_angles_from_trf', '-v7.3')
