@@ -36,7 +36,7 @@ The main function to register videos is [head_tracker.m](head_tracker.m)
  * `mask_mode`: a `2 x 1` vector `[a, b]` where is `a` is a boolean that sets whether the mask it set automatically or just set to start at the middle of the frame and needs to be set by the user. Note that the auto-mask feature may not work if video quality deviates too much from the example videos provided. `b` is a boolean that sets whether the user gets the option to edit the mask. This should usually be set to `true` unless the automatically set mask is sufficient. `mask_mode` can also be passed as a previously saved mask structure. If analyzing a bunch of videos from one fly, it may be prudent to set the mask for the first video and then pass the previously saved mask to all subsequent videos.
 
 
-* `npts`: the number of points to rack in the head mask. This will depend on the resolution of your camera and how much of the frame your fly takes up. You typically want to set this such that you see most of the points on the antennae highlighted (red & blue points in image above) but not any points on the head itself.
+* `npts`: the number of points to track in the head mask. This will depend on the resolution of your camera and how much of the frame your fly takes up. You typically want to set this such that you see most of the points on the antennae highlighted (red & blue points in image above) but not any points on the head itself.
 
 
 * `neck_frames`: the number of frames in the video used to automatically find the neck joint when setting the mask. Only matters if `mask_mode(0) = true`.
