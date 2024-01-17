@@ -36,7 +36,7 @@ mat_var_name = []; % only required if loading vidoe from a .mat file
 debug_heading = 1; % if 1 then bring up the debug heading window automatically
 flip_vid = false; % do not flip the video if false
 playback = 1; % playback rate (1 = every frame)
-vidpath = false; % path to save tracking video. Leaving empty uses default path
+vidpath = []; % path to save tracking video. Leaving empty uses default path
 
 [angle, imgstats, initframe] = body_tracker(vid, save_path, mat_var_name, ...
                                                 debug_heading, flip_vid, playback, vidpath);
@@ -58,10 +58,10 @@ legend('from registration', 'from body-tracker')
 % Track the head in the example registered video of a magnetically tethered (body-free) fly 
 % in the 'example_videos\registered' directory. Save to the default path: '..\tracked_head'.
 clear ; close all ; clc
-vid = 'example_vidoes\registered\example_body_free_registered.mp4'; % path to video file
+vid = 'example_videos\registered\example_body_free_registered.mp4'; % path to video file
 save_path = []; % path to new file (e.g., 'head_data.mat'). Leaving empty uses defualt path.
 mat_var_name = []; % only required if loading vidoe from a .mat file
-mask_mode = [1 1]; % set mask to auto find the neck and let user adjust afterwards
+mask_mode = [1 1]; % set mask to auto, find the neck and let user adjust afterwards
 npts = 100; % about enough points to cover antennae
 neck_frames = 20; % use this many frames to find the neck
 playback = 1; % playback rate (1 = every frame)
@@ -77,14 +77,14 @@ plot(data.angle)
 % Track the head in the example registered video of a rigidly tethered (body-fixed) fly 
 % in the 'example_videos' directory. Save to the default path: '..\tracked_head'.
 clear ; close all ; clc
-vid = 'example_vidoes\example_body_fixed.mp4'; % path to video file
+vid = 'example_videos\example_body_fixed.mat'; % path to video file
 save_path = []; % path to new file (e.g., 'head_data.mat'). Leaving empty uses defualt path.
 mat_var_name = []; % only required if loading vidoe from a .mat file
-mask_mode = [1 1]; % set mask to auto find the neck and let user adjust afterwards
+mask_mode = [1 1]; % set mask to auto, find the neck and let user adjust afterwards
 npts = 100; % about enough points to cover antennae
 neck_frames = 20; % use this many frames to find the neck
 playback = 1; % playback rate (1 = every frame)
-vidpath = []; % path to save tracking video. Leaving empty uses defualt path
+vidpath = false; % path to save tracking video. Leaving empty uses defualt path
 
 [data, mask] = head_tracker(vid, save_path, mat_var_name, ...
                 mask_mode, npts, neck_frames, playback, vidpath);
@@ -96,7 +96,7 @@ plot(data.angle)
 % Track the abdomen in the example registered video of a rigidly tethered (body-fixed) fly 
 % in the 'example_videos' directory. Save to the default path: '..\tracked_head'.
 clear ; close all ; clc
-vid = 'example_vidoes\example_body_fixed.mp4'; % path to video file
+vid = 'example_videos\example_body_fixed.mp4'; % path to video file
 save_path = []; % path to new file (e.g., 'abdomen_data.mat'). Leaving empty uses defualt path.
 mat_var_name = []; % only required if loading vidoe from a .mat file
 mask_mode = [1 1]; % set mask to auto find the neck and let user adjust afterwards

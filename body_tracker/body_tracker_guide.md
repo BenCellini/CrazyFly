@@ -1,13 +1,13 @@
 # Body tracker guide
 
-The body tracker is mainly designed for videos of magnetically bettered flies. There is no reason to track the body of rigidly tethered animals unless it's to track the accuracy of the tracker itself.
+The body tracker is mainly designed for videos of magnetically tethered flies. There is no reason to track the body of rigidly tethered animals unless it's to track the accuracy of the tracker itself.
 
 ## How it works
 
-The [body_tracker.m](body_tracker.m) function will take in a video (either as a matrix or a path to a video file) and track the body angle in all frames. First, each frame is pre-processed to get rid of noise and blurred to make the fly appear like one big blob (removes affects from legs, head, etc.). The body angle is then calculated by fitting an ellipse to the white pixels in each frame:
+The [body_tracker.m](body_tracker.m) function will take in a video (either as a matrix or a path to a video file) and track the body yaw angle in all frames. First, each frame is pre-processed to get rid of noise and blurred to make the fly appear like one big blob (removes affects from legs, head, etc.). The body angle is then calculated by fitting an ellipse to the white pixels in each frame:
 ![body_tracker.png](../img/body_tracker.png)
 
-The initial heading of the fly is found using the [find_heading.m](../tools/find_heading.m), which makes sure that we track the fly's head instead of the abdomen. 
+The initial heading of the fly is found using the [find_heading.m](../util/find_heading.m), which makes sure that we track the fly's head instead of the abdomen. 
 
 ## Running
 The main function to register videos is [body_tracker.m](body_tracker.m):
@@ -44,7 +44,7 @@ The main function to register videos is [body_tracker.m](body_tracker.m):
   * If `playback` is set to any other integer `n` then display every `n` frames
 
 
-* `vidpath`: path to output the tracking video. If empty `vidpath = []`, then export to default directory. Set to `false` to skip export. Note that `playback` is ideally set to `1` if exporting a video to get smooth looking videos.
+* `vidpath`: path to output the tracking video. If empty `vidpath = []`, then export to default directory. Set to `false` to skip export. Note that `playback` is ideally set to `1` if exporting a video, to get smooth looking videos.
 
 ### Output guide
 

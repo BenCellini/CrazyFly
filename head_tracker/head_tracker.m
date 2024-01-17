@@ -1,4 +1,4 @@
-function [head, mask] = head_tracker(vid, save_path, mat_var_name, mask_mode, npts, neck_frames, playback, vidpath)
+function [data, mask] = head_tracker(vid, save_path, mat_var_name, mask_mode, npts, neck_frames, playback, vidpath)
 % track_head_vid: tracks head movments
 %
 % Tracks antenna tips on fly head calculates the angle with
@@ -97,9 +97,9 @@ dim = size(viddata.first_frame); % get size of video
 if viddata.matflag
     if length(neck_frames) == 1
         step = round(viddata.n_frame / neck_frames);
-        neck_vid = vid(:, :, 1:step:end);
+        neck_vid = viddata.vid(:, :, 1:step:viddata.n_frame);
     else
-        neck_vid = vid(:, :, neck_frames);
+        neck_vid = viddata.vid(:, :, neck_frames);
     end
 else
     if length(neck_frames) == 1
@@ -129,12 +129,14 @@ elseif mask_mode(1) == 1 % set mask automatically by finding neck joint
     
     global mask
  	mask_frame = viddata.first_frame; % get 1st frame to set mask
-    mask = make_mask(pivot, median(body_yaw), [0.8*R 2.2*R], [40 40], mask_frame);
+    mask = make_mask(pivot, median(body_yaw), [0.8*R 1.7*R], [40 40], mask_frame);
+    mask.fig.main.Name = 'CrazyFly: Head-Tracker';
     
     if auto_mask % check manually
-        title('Set the mask. Then click "Done".')
         mask.fig.main.Units = 'inches';
         mask.fig.main.Position(3:4) = [8, 8];
+        text(0,-20,'Set the mask & click Done.', ...
+            'Color', 'R', 'FontSize', 15, 'FontWeight', 'bold');
         movegui('center')
         uiwait(mask.fig.main)
     else
@@ -147,10 +149,11 @@ elseif mask_mode(1) == 0 % set mask manually, start at center
     
     global mask
 	mask_frame = viddata.first_frame; % get 1st frame to set mask
-    mask = make_mask(pivot, 0, [0.8*R 2.2*R], [40 40], mask_frame);
+    mask = make_mask(pivot, 0, [0.8*R 2.0*R], [40 40], mask_frame);
     mask.fig.main.Units = 'inches';
-    title('Set the mask. Then click "Done".')
     mask.fig.main.Position(3:4) = [8, 8];
+        text(0,-20,'Set the mask & click Done.', ...
+            'Color', 'R', 'FontSize', 15, 'FontWeight', 'bold');
     movegui('center')
     uiwait(mask.fig.main) % wait to set
 end
@@ -183,17 +186,19 @@ for n = 1:viddata.n_frame
     end
 
     % Run tip-tracker
-    [angle,m,pts,k] = tracktip(frame, mask.area_points, ...
-        pivot, norm, npts, 'clust', 2, 29);
+    [angle, m, pts, k, ~, c_mean_all] = ...
+    tracktip(frame, mask.area_points, pivot, norm, npts, 'clust', 2, 29);
 
     head.angle_glob(n) = angle - 270;
     head.angle(n) = head.angle_glob(n) - mask.global;
-    head.antenna(n,:) = m' - 270;
+    head.antenna(n, :) = m' - 270;
     head.points{n} = pts;
     head.clust{n} = k;
 
-    head.tip(n,:) = mask.move_points.rot +  ...
-        mask.radius.outer*[sind(head.angle_glob(n)) , -cosd(head.angle_glob(n))];
+    head.tip(n, :) = c_mean_all;
+
+    %head.tip(n,:) = mask.move_points.rot +  ...
+        %mask.radius.outer*[sind(head.angle_glob(n)) , -cosd(head.angle_glob(n))];
 end
 toc
 

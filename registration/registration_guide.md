@@ -6,7 +6,7 @@ When working with videos of magnetically tethered flies, or any kind of video wh
 
 The [register_video.m](register_video.m) function will take in a video (either as a matrix or a path to a video file) and perform a geometric transform using `imregtform.m` (https://www.mathworks.com/help/images/ref/imregtform.html) to rotate (and translate, if necessary) every frame in the video to most closely match the first frame in the video.
 
-The [find_heading.m](../tools/find_heading.m) function will then find the heading of the fly in the first frame, and rotate every registered frame such that the fly body is aligned as close as possible to the vertical axis (fly head pointing up).
+The [find_heading.m](../util/find_heading.m) function will then find the heading of the fly in the first frame, and rotate every registered frame such that the fly body is aligned as close as possible to the vertical axis (fly head pointing up).
 
 The example video to register is [example_body_free.mp4](../example_videos/example_body_free.mp4), where the fly is rotating about the yaw axis and the frames look something like this:
 

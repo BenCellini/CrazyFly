@@ -2,7 +2,7 @@
 
 ## Overview
 
-CrazyFly is a set of tools written in MATLAB for pulling out kinematics from videos of rigidly and magnetically tethered  (fly body can rotate about yaw axis) fruit flies. While not tested thoroughly, CrazyFly can also work well with other insects (such as tethered hawk moths).
+CrazyFly is a set of tools written in MATLAB for pulling out kinematics from videos of rigidly and magnetically tethered  (fly body can rotate about yaw axis) fruit flies. While not tested thoroughly on videos of other organisms, CrazyFly should generalize fairly well.
 
 Please cite:
 
@@ -15,7 +15,7 @@ The latest version of CrazyFly has been tested on MATLAB 2022a, but should work 
 Any questions about CrazyFly can be directed to me (Benjamin Cellini): `bcellini00@gmail.com`
 
 ## Tips on getting good videos
-All the CrazyFly functions work infinitely better with high quality videos and it is worth the extra time spent optimizing video quality before attempting any kinematic tracking. Here are some tips for taking videos of tethered fruit flies:
+All the CrazyFly functions work infinitely better with high quality videos, and it is worth the extra time spent optimizing video quality before attempting any kinematic tracking. Here are some tips for taking videos of tethered fruit flies:
 
 ### Frame rate
 
@@ -23,14 +23,14 @@ A frame rate around 100 fps is ideal if you plan on measuring wing stroke angles
 
 ### Camera angle
 
-Choose an angle that is aligned with the wing stroke plane and head yaw plane as possible. The wing stroke edge should appear high and close to the fly head and you should be able to see a clear gap between the fly head and neck. The base of the antennae on the head should also be visible. This is critical, as CrazyFly relies on the antennae features to measure the head yaw angle.
+Choose an angle that is aligned with the wing stroke plane and head yaw plane as possible. The wing stroke edge should appear high and close to the fly head, and you should be able to see a clear gap between the fly head and neck. The base of the antennae on the head should also be visible. This is critical, as CrazyFly relies on the antennae features to measure the head yaw angle.
 
 ### Lighting
 CrazyFly is designed to work wih front lighting, meaning that the fly is the only illuminated object (appears white) in the frame and everything else is (ideally) black. Backlit videos should also work, but have to be inverted. CrazyFly does this automatically, but this has not been thoroughly tested. In either case, having enough lighting + contrast to clearly resolve edges is very helpful.
 
 ## Example videos
 
-Examples of good quality videos are provided files in the [example_vidoes](example_videos) directory as both `.mp4` and `.mat` files. Most CrazyFly functions can take in either path's to video files (`.mp4`, `.avi`, etc.) or videos stored in a matrix data (from `.mat` files). If your videos are stored as `.mat` files and are too large to be loaded into MATLAB, I recommend converting your files to `.mp4` before using any CrazyFly functions.
+Examples of good quality videos are provided files in the [example_videos](example_videos) directory as both `.mp4` and `.mat` files. Most CrazyFly functions can take in either path's to video files (`.mp4`, `.avi`, etc.) or videos stored in a matrix data (from `.mat` files). If your videos are stored as `.mat` files and are too large to be loaded into MATLAB, I recommend converting your files to `.mp4` before using any CrazyFly functions.
 The [mat2vid.m](util/mat2vid.m) &  [vid2mat.m](util/vid2mat.m) functions I provide may be useful for converting your files between formats.
 
 ## Main CrazyFly functions
