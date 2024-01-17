@@ -64,10 +64,6 @@ Tracks the abdomen yaw angle with respect to the abdomen joint of rigidly tether
 
 Not yet supported. I recommend https://github.com/BenCellini/Benifly for wing tracking.
 
-
-### Head roll tracking
-
-
 ## Notes
 * Many of the functions 
 
