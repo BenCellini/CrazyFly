@@ -64,8 +64,5 @@ Tracks the abdomen yaw angle with respect to the abdomen joint of rigidly tether
 
 Not yet supported. I recommend https://github.com/BenCellini/Benifly for wing tracking.
 
-## Notes
-* Many of the functions 
-
 ## Disclaimer
 *Note that CrazyFly has nothing to do with the Drone platform Crazyflie (https://www.bitcraze.io/products/crazyflie-2-1/), I just didn't realize there was anything else called Crazyfly when I made this repository...but it's too late to change the name.*
