@@ -60,6 +60,11 @@ Tracks the head yaw angle with respect to the neck joint of rigidly tethered fli
 
 Tracks the abdomen yaw angle with respect to the abdomen joint of rigidly tethered flies (or registered videos of magnetically tethered flies).
 
+### Wing beat amplitude tracking
+
+Not yet supported. I recommend https://github.com/BenCellini/Benifly for wing tracking.
+
+
 ### Head roll tracking
 
 

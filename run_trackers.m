@@ -92,6 +92,24 @@ vidpath = false; % path to save tracking video. Leaving empty uses defualt path
 close
 plot(data.angle)
 
+%% Abdomen tracking on registered video
+% Track the abdomen in the example registered video of a rigidly tethered (body-fixed) fly 
+% in the 'example_videos' directory. Save to the default path: '..\tracked_head'.
+clear ; close all ; clc
+vid = 'example_videos\registered\example_body_free_registered.mp4'; % path to video file
+save_path = []; % path to new file (e.g., 'abdomen_data.mat'). Leaving empty uses defualt path.
+mat_var_name = []; % only required if loading vidoe from a .mat file
+mask_mode = [1 1]; % set mask to auto find mask position and let user adjust afterwards
+npts = 300; % about enough points to get abdomen tip and nothing else
+playback = 1; % playback rate (1 = every frame)
+vidpath = []; % path to save tracking video. Leaving empty uses defualt path
+
+[data, mask] = abdomen_tracker(vid, save_path, mat_var_name, ...
+                mask_mode, npts, playback, vidpath);
+
+close
+plot(data.angle)
+
 %% Abdomen tracking on rigid tether video
 % Track the abdomen in the example registered video of a rigidly tethered (body-fixed) fly 
 % in the 'example_videos' directory. Save to the default path: '..\tracked_head'.
@@ -99,14 +117,13 @@ clear ; close all ; clc
 vid = 'example_videos\example_body_fixed.mp4'; % path to video file
 save_path = []; % path to new file (e.g., 'abdomen_data.mat'). Leaving empty uses defualt path.
 mat_var_name = []; % only required if loading vidoe from a .mat file
-mask_mode = [1 1]; % set mask to auto find the neck and let user adjust afterwards
-npts = 100; % about enough points to cover antennae
-neck_frames = 20; % use this many frames to find the neck
+mask_mode = [1 1]; % set mask to auto find mask position and let user adjust afterwards
+npts = 400; % about enough points to get abdomen tip and nothing else
 playback = 1; % playback rate (1 = every frame)
 vidpath = []; % path to save tracking video. Leaving empty uses defualt path
 
-[data, mask] = head_tracker(vid, save_path, mat_var_name, ...
-                mask_mode, npts, neck_frames, playback, vidpath);
+[data, mask] = abdomen_tracker(vid, save_path, mat_var_name, ...
+                mask_mode, npts, playback, vidpath);
 
+close
 plot(data.angle)
-

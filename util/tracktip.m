@@ -110,9 +110,11 @@ else
             angle = median([prctile(theta, arg(1)), prctile(theta, arg(2))]);
         case 'clust' % agglomerative clustering to find tip(s)
             if arg == 1 % no clustering to do if there's only 1 group
-                angle = median(theta);
+                angle = mean(theta);
                 m = angle;
                 k = ones(size(pts,1),1);
+                c_mean = {[mean(x), mean(y)]};
+                c_mean_all = c_mean{1};
             else
                 % Cluster data into specified # of groups
                 %k = kmeans([theta rho], arg, 'Distance', 'cosine', 'MaxIter', 500);

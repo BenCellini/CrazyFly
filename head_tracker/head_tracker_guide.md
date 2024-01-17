@@ -6,7 +6,7 @@ The head tracker is designed for videos of rigidly tethered flies or videos that
 
 The [head_tracker.m](head_tracker.m) function will take in a video (either as a matrix or a path to a video file) and track the head yaw angle in all frames.
 
-First, a GUI is used to allow the set a movable mask. The user should set the mask as illustrated below, where the middle point is aligned with the neck joint and the area within the two arcs sets the part of the image to consider when computing the head angle. The dashed axis represents the global angle (angle of fly body) to compute the head angle with respect to. Note that the mask can be set automatically (see inout guide below) if videos are similar to the example videos provided.
+First, a GUI is used to allow the set a movable mask. The user should set the mask as illustrated below, where the middle point is aligned with the neck joint and the area within the two arcs sets the part of the image to consider when computing the head angle. The dashed axis represents the global angle (angle of fly body) to compute the head angle with respect to (CW +). Note that the mask can be set automatically (see inout guide below) if videos are similar to the example videos provided.
 
 ![head_tracked.png](../img/head_gui.png)
 
