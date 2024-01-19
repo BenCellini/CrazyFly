@@ -96,4 +96,7 @@ Example `.mat` file: [example_body_free_registered_data.mat](../example_videos/r
     [trf, body_angles_from_trf] = register_video(vid, save_vid_path);
 
 ## Notes
-* If your videos are stored in `.mat` files and are too big to load into ram, convert them to `.mp4` files first. [mat2vid.m](../util/mat2vid.m) is a useful function for this purpose.
+
+* Registration can take quite a while for larger videos. You can speed things up by:
+  * Cropping your videos as much as possible
+  * Running batch processing in parallel
