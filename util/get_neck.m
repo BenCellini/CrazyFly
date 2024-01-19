@@ -14,7 +14,7 @@ function [pivot, R_head, R_body, body_angle] = get_neck(vid, vid_bw, cent)
 %
 
 dim = size(vid);
-Fc_n = 0.2; % normalized filtering cutt-off for smoothing fly outline
+Fc_n = 0.2; % normalized filtering cut-off for smoothing fly outline
 for n = 1:dim(3)
     frame = vid(:,:,n); % frame for analysis
 

@@ -64,5 +64,9 @@ Tracks the abdomen yaw angle with respect to the abdomen joint of rigidly tether
 
 Not yet supported. I recommend https://github.com/BenCellini/Benifly for wing tracking.
 
+## Notes
+
+* If your videos are stored in `.mat` files and are too big to load into ram, convert them to `.mp4` files first. [mat2vid.m](../util/mat2vid.m) is a useful function for this purpose.
+
 ## Disclaimer
 *Note that CrazyFly has nothing to do with the Drone platform Crazyflie (https://www.bitcraze.io/products/crazyflie-2-1/), I just didn't realize there was anything else called Crazyfly when I made this repository...but it's too late to change the name.*
