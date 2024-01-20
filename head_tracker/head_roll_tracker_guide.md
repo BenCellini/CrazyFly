@@ -2,6 +2,9 @@
 
 The head roll tracker is designed for 2D top or bottom view videos of rigidly tethered flies or videos that have been registered such that the body is fixed in place (see [registration_guide.md](../registration/registration_guide.md)).
 
+## Disclaimer
+
+This is by far the messiest & least reliable CrazyFly function and the results will be highly dependent on your video quality. The code is also currently an abomination that is really hard to follow. I plan to release a nice streamlined version eventually.
 
 ## How it works
 
@@ -9,7 +12,7 @@ The [head_roll_tracker.m](head_tracker.m) class will take in a video (must be a 
 
     Kim, A. J., Fenk, L. M., Lyu, C. & Maimon, G. Quantitative Predictions Orchestrate Visual Signaling in Drosophila. Cell 168, 280-294.e12 (2017).
 
-where Figure S2 provides more detailed explanation behind the method and calibration.
+where Figure S2 provides more a detailed explanation behind the method and calibration.
 
 I implemented this method independently myself (all original code) here
 
@@ -21,7 +24,7 @@ Please cite both of these papers if using this specific CrazyFly method.
 
  Note that for this tracker to work correctly, there must be clear contrast between the eyes and the head:
 
-![head_roll.png](..%2Fimg%2Fhead_roll.png)
+![head_roll.png](../img/head_roll.png)
 
 
 ## Running
@@ -42,15 +45,13 @@ The main class to register videos is [head_roll_tracker.m](head_roll_tracker.m)
 
 By running
 
-    play_tracking(self, playback, [], savepath, montage_name)
+    play_tracking(obj, playback, [], savepath, montage_name)
 
-a montage of th roll tracking  can be output.
+after the main method, a montage of the roll tracking  can be output.
 
-Example output montage: [example_head_roll_montage.mp4](..%2Fexample_videos%2Ftracked_head%2Fexample_head_roll_montage.mp4)
+Example output montage: [example_head_roll_montage.mp4](../example_videos/tracked_head/example_head_roll_montage.mp4)
 
 ### Example usage
-
-#### From video file, debugging the initial heading, playing back every frame, & saving the tracking video in the default location
 
     load('example_videos\example_head_roll.mat', 'vid'); % load .mat video file
     roll_calibration = 36.33; % see Kim et al 2017: "Quantitative Predictions Orchestrate Visual Signaling in Drosophila"

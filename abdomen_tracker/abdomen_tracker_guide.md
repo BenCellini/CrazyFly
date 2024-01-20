@@ -16,7 +16,7 @@ After clicking `Done`, the tracker will look for the points in the mask that are
 
 
 ## Running
-The main function to register videos is [abdomen_tracker.m](abdomen_tracker.m)
+The main function to track the abdomen videos is [abdomen_tracker.m](abdomen_tracker.m)
 
     [data, mask] = abdomen_tracker(vid, save_path, mat_var_name, mask_mode, npts, playback, vidpath);
 
@@ -66,8 +66,6 @@ Example output file: [example_body_fixed_tracked_abdomen_data.mat](../example_vi
 If `vidpath` is set, then the tracking video is also saved. Example tracking video: [example_body_fixed_tracked_abdomen.mp4](../example_videos/tracked_abdomen/example_body_fixed_tracked_abdomen.mp4)
 
 ### Example usage
-
-#### From video file, debugging the initial heading, playing back every frame, & saving the tracking video in the default location
 
     vid = 'example_videos\registered\example_body_free_registered.mp4'; % path to video file
     save_path = []; % path to new file (e.g., 'abdomen_data.mat'). Leaving empty uses defualt path.

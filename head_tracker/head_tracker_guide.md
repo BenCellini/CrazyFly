@@ -16,7 +16,7 @@ After clicking `Done`, the tracker will look for the points in the mask that are
 
 
 ## Running
-The main function to register videos is [head_tracker.m](head_tracker.m)
+The main function to track the head is [head_tracker.m](head_tracker.m)
 
     [data, mask] = head_tracker(vid, save_path, mat_var_name, mask_mode, npts, neck_frames, playback, vidpath);
 
@@ -69,8 +69,6 @@ Example output file: [example_body_free_registered_tracked_head_data.mat](../exa
 If `vidpath` is set, then the tracking video is also saved. Example tracking video: [example_body_free_tracked_body.mp4](../example_videos/tracked_body/example_body_free_tracked_body.mp4)
 
 ### Example usage
-
-#### From video file, debugging the initial heading, playing back every frame, & saving the tracking video in the default location
 
     vid = 'example_videos\example_body_fixed.mp4'; % path to video file
     save_path = []; % path to new file (e.g., 'head_data.mat'). Leaving empty uses defualt path.
