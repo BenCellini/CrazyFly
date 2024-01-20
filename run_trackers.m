@@ -84,13 +84,49 @@ mask_mode = [1 1]; % set mask to auto, find the neck and let user adjust afterwa
 npts = 100; % about enough points to cover antennae
 neck_frames = 20; % use this many frames to find the neck
 playback = 1; % playback rate (1 = every frame)
-vidpath = false; % path to save tracking video. Leaving empty uses defualt path
+vidpath = []; % path to save tracking video. Leaving empty uses defualt path
 
 [data, mask] = head_tracker(vid, save_path, mat_var_name, ...
                 mask_mode, npts, neck_frames, playback, vidpath);
 
 close
 plot(data.angle)
+
+%% Head tracking on rigid tether video
+% Track the head in the example registered video of a rigidly tethered (body-fixed) fly 
+% in the 'example_videos' directory. Save to the default path: '..\tracked_head'.
+clear ; close all ; clc
+vid = 'example_videos\example_head_roll.mat'; % path to video file
+save_path = []; % path to new file (e.g., 'head_data.mat'). Leaving empty uses defualt path.
+mat_var_name = []; % only required if loading vidoe from a .mat file
+mask_mode = [1 1]; % set mask to auto, find the neck and let user adjust afterwards
+npts = 100; % about enough points to cover antennae
+neck_frames = 20; % use this many frames to find the neck
+playback = 1; % playback rate (1 = every frame)
+vidpath = []; % path to save tracking video. Leaving empty uses defualt path
+
+[data, mask] = head_tracker(vid, save_path, mat_var_name, ...
+                mask_mode, npts, neck_frames, playback, vidpath);
+
+close
+plot(data.angle)
+
+%% Head roll tracking on rigid tether video
+% Track the head yaw & roll from a single camera view
+clear ; close all ; clc
+load('example_videos\example_head_roll.mat', 'vid'); % load .mat video file
+roll_calibration = 36.33; % see Kim et al 2017: "Quantitative Predictions Orchestrate Visual Signaling in Drosophila"
+self = head_roll_tracker(vid, roll_calibration); % run tracker
+
+hold on
+plot(self.yaw)
+plot(self.roll)
+
+% Make video montage
+playback = 1;
+savepath = 'example_videos\tracked_head';
+montage_name = 'example_head_roll_montage.mp4';
+play_tracking(self, playback, [], savepath, montage_name)
 
 %% Abdomen tracking on registered video
 % Track the abdomen in the example registered video of a rigidly tethered (body-fixed) fly 
