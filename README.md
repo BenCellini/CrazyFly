@@ -12,7 +12,9 @@ and link this repository if using CrazyFly software in published works.
 
 The latest version of CrazyFly has been tested on MATLAB 2022a, but should work for most newer releases. Some older releases have slightly different syntax for handling movable points on figures that might throw some errors.
 
-Any questions about CrazyFly can be directed to me (Benjamin Cellini): `bcellini00@gmail.com`
+CrazyFly should work really well for videos of similar quality to the example videos provided in [example_videos](example_videos). I have analyzed thousands of videos with this software suite and my best estimate of the success rate (correctly tracked kinematics) would be 99%. There are of course possible bugs and other things I did not account for when analyzing videos that deviate from the quality of my videos, so don't expect perfect results if your videos are not a close match to mine.
+
+Any questions about CrazyFly or suggestions for new features/improvements can be directed to me (Benjamin Cellini): `bcellini00@gmail.com`. Please include "CrazyFly" in the subject line. I am happy to help troubleshoot when I am not too busy.
 
 ## Tips on getting good videos
 All the CrazyFly functions work infinitely better with high quality videos, and it is worth the extra time spent optimizing video quality before attempting any kinematic tracking. Here are some tips for taking videos of tethered fruit flies:
@@ -53,6 +55,13 @@ Tracks the body yaw angle of magnetically tethered flies. Note that registering 
 [head_tracker_guide.md](head_tracker/head_tracker_guide.md)
 
 Tracks the head yaw angle with respect to the neck joint of rigidly tethered flies (or registered videos of magnetically tethered flies).
+
+### Head roll tracking
+
+[head_roll_tracker_guide.md](head_tracker/head_roll_tracker_guide.md)
+
+Attempts to estimate head roll by from a single top or bottom 2D camera view by computing the ratio of eye widths. Required higher contrast videos like [example_head_roll.mp4](example_videos%2Fexample_head_roll.mp4).
+
 
 ### Abdomen yaw tracking
 
