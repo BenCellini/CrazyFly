@@ -60,7 +60,7 @@ Tracks the head yaw angle with respect to the neck joint of rigidly tethered fli
 
 [head_roll_tracker_guide.md](head_tracker/head_roll_tracker_guide.md)
 
-Attempts to estimate head roll by from a single top or bottom 2D camera view by computing the ratio of eye widths. Required higher contrast videos like [example_head_roll.mp4](example_videos%2Fexample_head_roll.mp4).
+Attempts to estimate head roll by from a single top or bottom 2D camera view by computing the ratio of eye widths. Requires higher contrast videos like [example_head_roll.mp4](example_videos%2Fexample_head_roll.mp4).
 
 
 ### Abdomen yaw tracking
