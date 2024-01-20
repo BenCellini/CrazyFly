@@ -36,7 +36,7 @@ Examples of good quality videos are provided files in the [example_videos](examp
 The [mat2vid.m](util/mat2vid.m) &  [vid2mat.m](util/vid2mat.m) functions I provide may be useful for converting your files between formats.
 
 ## Main CrazyFly functions
-Each function comes with its own guide file. Make sure to have the path to the main tracker function (e.g., [body_tracker.m](body_tracker/body_tracker.m)) and the [tools](tools) directory  on the MATLAB path before running any functions. The file [run_trackers.m](run_trackers.m) shows example usage for all main CrazyFly functions, but it is recommended to read the guides for all functions (linked below) first.
+Each function comes with its own guide file. Make sure to have the path to the main tracker function (e.g., [body_tracker.m](body_tracker/body_tracker.m)) and the [util](util) directory  on the MATLAB path before running any functions. The file [run_trackers.m](run_trackers.m) shows example usage for all main CrazyFly functions, but it is recommended to read the guides for all functions (linked below) first.
 
 ### Registration
 
@@ -60,7 +60,7 @@ Tracks the head yaw angle with respect to the neck joint of rigidly tethered fli
 
 [head_roll_tracker_guide.md](head_tracker/head_roll_tracker_guide.md)
 
-Attempts to estimate head roll by from a single top or bottom 2D camera view by computing the ratio of eye widths. Requires higher contrast videos like [example_head_roll.mp4](example_videos%2Fexample_head_roll.mp4).
+Attempts to estimate head roll by from a single top or bottom 2D camera view by computing the ratio of eye widths. Requires higher contrast videos like [example_head_roll.mp4](example_videos/example_head_roll.mp4).
 
 
 ### Abdomen yaw tracking
@@ -75,7 +75,7 @@ Not yet supported. I recommend https://github.com/BenCellini/Benifly for wing tr
 
 ## Notes
 
-* If your videos are stored in `.mat` files and are too big to load into ram, convert them to `.mp4` files first. [mat2vid.m](../util/mat2vid.m) is a useful function for this purpose.
+* If your videos are stored in `.mat` files and are too big to load into ram, convert them to `.mp4` files first. [mat2vid.m](util/mat2vid.m) is a useful function for this purpose.
 
 ## Disclaimer
 *Note that CrazyFly has nothing to do with the Drone platform Crazyflie (https://www.bitcraze.io/products/crazyflie-2-1/), I just didn't realize there was anything else called Crazyfly when I made this repository...but it's too late to change the name.*
