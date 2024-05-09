@@ -79,4 +79,4 @@ If `vidpath` is set, then the tracking video is also saved. Example tracking vid
     playback = 1; % playback rate (1 = every frame)
     vidpath = []; % path to save tracking video. Leaving empty uses defualt path
     
-    [data, mask] = head_tracker(vid, save_path, mat_var_name, mask_mode, npts, neck_frames, playback, vidpath);, neck_frames, playback, vidpath);
+    [data, mask] = head_tracker(vid, save_path, mat_var_name, mask_mode, npts, neck_frames, playback, vidpath);
