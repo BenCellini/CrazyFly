@@ -12,7 +12,7 @@ The [head_roll_tracker.m](head_tracker.m) class will take in a video (must be a 
 
     Kim, A. J., Fenk, L. M., Lyu, C. & Maimon, G. Quantitative Predictions Orchestrate Visual Signaling in Drosophila. Cell 168, 280-294.e12 (2017).
 
-where Figure S2 provides more a detailed explanation behind the method and calibration.
+where Figure S2 provides a more detailed explanation behind the method and calibration.
 
 I implemented this method independently myself (all original code) here
 
@@ -28,7 +28,7 @@ Please cite both of these papers if using this specific CrazyFly method.
 
 
 ## Running
-The main class to register videos is [head_roll_tracker.m](head_roll_tracker.m)
+The main class to track head roll in videos is [head_roll_tracker.m](head_roll_tracker.m)
 
     obj = head_roll_tracker(vid, roll_cal)
 
@@ -37,11 +37,11 @@ The main class to register videos is [head_roll_tracker.m](head_roll_tracker.m)
 * `vid` must be a MATLAB variable containing the video as a matrix. This may change in a future release.
 
 
-* `roll_cal`: roll calibration coefficient. Normally set to 36.33 from Kim et al 2017, but may be best to do your own calibration.
+* `roll_cal`: roll calibration coefficient. Normally set to `36.33` from Kim et al 2017, but may be best to do your own calibration.
 
 ### Output guide
 
-[head_roll_tracker.m](head_roll_tracker.m) will not automatically output a data file like many of the other CrazyFly functions. Instead, the tracking data (and lots of other data) is stored in the `obj` object. Some useful data, like `obj.yaw` & `obj.roll` `obj.roll_idx`, can be saved independent if desired. 
+[head_roll_tracker.m](head_roll_tracker.m) will not automatically output a data file like many of the other CrazyFly functions. Instead, the tracking data (and lots of other data) is stored in the `obj` object. Some useful data, like `obj.yaw` & `obj.roll` `obj.roll_idx`, can be saved independently if desired. 
 
 By running
 

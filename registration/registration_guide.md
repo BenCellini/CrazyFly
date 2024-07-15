@@ -1,12 +1,14 @@
 # Registration guide
 
-When working with videos of magnetically tethered flies, or any kind of video where the animal body is moving, registration is a useful preprocessing step to allow other kinematics (such as head, abdomen, or wing movements) to be analyzed. There is no reason to register videos of rigidly tethered animals.
+When working with videos of magnetically tethered flies, or any kind of video where the animal body is moving, registration is a useful preprocessing step that stabilizes the video in the body reference frame to allow other kinematics (such as head, abdomen, or wing movements) to be analyzed. There is no reason to register videos of rigidly tethered animals.
+
+Because the registration protocol effectively finds how much to rotate each frame to maintain a constant heading, the body angle is also computed and pulled put. So, if you are registering videos you probably don't need to run the [body_tracker_guide.md](../body_tracker/body_tracker_guide.md) unless you also want to pull out other information (like body centroid, etc.).
 
 ## How it works
 
 The [register_video.m](register_video.m) function will take in a video (either as a matrix or a path to a video file) and perform a geometric transform using `imregtform.m` (https://www.mathworks.com/help/images/ref/imregtform.html) to rotate (and translate, if necessary) every frame in the video to most closely match the first frame in the video.
 
-The [find_heading.m](../util/find_heading.m) function will then find the heading of the fly in the first frame, and rotate every registered frame such that the fly body is aligned as close as possible to the vertical axis (fly head pointing up).
+The [find_heading.m](../util/find_heading.m) function will then find the heading of the fly in the first frame, and rotate every registered frame such that the fly body is aligned as closely as possible to the vertical axis (fly head pointing up).
 
 The example video to register is [example_body_free.mp4](../example_videos/example_body_free.mp4), where the fly is rotating about the yaw axis and the frames look something like this:
 
@@ -36,7 +38,7 @@ The main function to register videos is [register_video.m](register_video.m):
   * a MATLAB variable containing the video as a matrix
 
 
-* `save_vid_path`: sets the output path of the registered video. This must be set if directly inputting a MATLAB variable for `vid`. Otherwise, this can be left empty `save_vid_path = []` and the default output path is `input-video-folder\registered\input_video_name_registered.mp4`
+* `save_vid_path`: sets the output path of the registered video. This must be set if directly inputting a MATLAB variable for `vid`. Otherwise, this can be left empty `save_vid_path = []` and the default output path is `[input-video-folder]\registered\[input_video_name]_registered.mp4`
 
 
  * `mat_var_name`: Only required if `vid` is a path to a `.mat` file. Sets the name of the video variable in the `.mat` file.

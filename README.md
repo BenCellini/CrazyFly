@@ -28,7 +28,7 @@ A frame rate around 100 fps is ideal if you plan on measuring wing stroke angles
 Choose an angle that is aligned with the wing stroke plane and head yaw plane as possible. The wing stroke edge should appear high and close to the fly head, and you should be able to see a clear gap between the fly head and neck. The base of the antennae on the head should also be visible. This is critical, as CrazyFly relies on the antennae features to measure the head yaw angle.
 
 ### Lighting
-CrazyFly is designed to work wih front lighting, meaning that the fly is the only illuminated object (appears white) in the frame and everything else is (ideally) black. Backlit videos should also work, but have to be inverted. CrazyFly does this automatically, but this has not been thoroughly tested. In either case, having enough lighting + contrast to clearly resolve edges is very helpful.
+CrazyFly is designed to work with front lighting, meaning that the fly is the only illuminated object (appears white) in the frame and everything else is (ideally) black. Backlit videos should also work, but have to be inverted. CrazyFly does this automatically, but this has not been thoroughly tested. In either case, having enough lighting + contrast to clearly resolve edges is very helpful.
 
 ## Example videos
 
